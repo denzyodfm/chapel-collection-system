@@ -59,10 +59,19 @@ class MemberController extends Controller
     public function show(Member $member): View
     {
         $member->load('hugpongBanay');
-        $collections = $member->collections()->with('encoder')->latest('collection_date')->paginate(10);
-        $totals = $member->collections()->selectRaw('collection_type, SUM(amount) as total')->groupBy('collection_type')->pluck('total', 'collection_type');
+        $memberCollectionTypes = [Collection::BALIK_GASA, Collection::DONATION];
+        $collections = $member->collections()
+            ->with('encoder')
+            ->whereIn('collection_type', $memberCollectionTypes)
+            ->latest('collection_date')
+            ->paginate(10);
+        $totals = $member->collections()
+            ->whereIn('collection_type', $memberCollectionTypes)
+            ->selectRaw('collection_type, SUM(amount) as total')
+            ->groupBy('collection_type')
+            ->pluck('total', 'collection_type');
 
-        return view('members.show', compact('member', 'collections', 'totals'));
+        return view('members.show', compact('member', 'collections', 'totals', 'memberCollectionTypes'));
     }
 
     public function edit(Member $member): View

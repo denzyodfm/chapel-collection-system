@@ -197,6 +197,39 @@ class ChapelCollectionTest extends TestCase
             ->assertSee('Post Offering After Mass');
     }
 
+    public function test_member_profile_does_not_show_offering_as_member_collection(): void
+    {
+        $treasurer = User::factory()->create(['role' => 'treasurer']);
+        $member = Member::create([
+            'full_name' => 'Member Without Offering Summary',
+            'status' => 'active',
+        ]);
+
+        Collection::create([
+            'member_id' => $member->id,
+            'collection_type' => Collection::BALIK_GASA,
+            'amount' => 100,
+            'collection_date' => '2026-06-01',
+            'collection_month' => '2026-06',
+            'encoded_by' => $treasurer->id,
+        ]);
+        Collection::create([
+            'member_id' => $member->id,
+            'collection_type' => Collection::HALAD,
+            'amount' => 500,
+            'collection_date' => '2026-06-02',
+            'encoded_by' => $treasurer->id,
+        ]);
+
+        $this->actingAs($treasurer)
+            ->get(route('members.show', $member))
+            ->assertOk()
+            ->assertSee('Balik Gasa')
+            ->assertSee('Donation')
+            ->assertDontSee('<p class="text-sm text-slate-500">Offering</p>', false)
+            ->assertDontSee('PHP 500.00');
+    }
+
     public function test_member_balik_gasa_year_endpoint_returns_month_plot(): void
     {
         $viewer = User::factory()->create(['role' => 'viewer']);

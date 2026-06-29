@@ -21,9 +21,9 @@
             <div><dt class="text-slate-500">Date Joined</dt><dd class="font-semibold">{{ $member->date_joined?->format('M d, Y') ?: '-' }}</dd></div>
         </dl>
         <div class="mt-5 grid gap-3">
-            @foreach (\App\Models\Collection::TYPES as $type => $label)
+            @foreach ($memberCollectionTypes as $type)
                 <div class="rounded-lg bg-slate-50 p-4">
-                    <p class="text-sm text-slate-500">{{ $label }}</p>
+                    <p class="text-sm text-slate-500">{{ \App\Models\Collection::TYPES[$type] }}</p>
                     <p class="text-xl font-bold text-sky-950">PHP {{ number_format((float) ($totals[$type] ?? 0), 2) }}</p>
                 </div>
             @endforeach
