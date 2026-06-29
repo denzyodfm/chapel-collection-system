@@ -39,18 +39,31 @@
 
     <form method="POST" action="{{ route('ledger.expenses.store') }}" class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
         @csrf
-        <h2 class="text-lg font-bold text-sky-950">Encode Expense</h2>
+        <div class="flex flex-wrap items-end justify-between gap-3">
+            <h2 class="text-lg font-bold text-sky-950">Encode Expense</h2>
+            <label class="grid gap-1 text-xs font-semibold uppercase tracking-wide text-slate-500">Expense Date
+                <input name="expense_date" type="date" value="{{ now()->format('Y-m-d') }}" required class="rounded-lg border border-slate-300 px-4 py-3 text-sm normal-case tracking-normal text-slate-900">
+            </label>
+        </div>
         <div class="mt-4 grid gap-4 md:grid-cols-2">
             <select name="fund_type" required class="rounded-lg border border-slate-300 px-4 py-3 text-sm">
                 @foreach ($fundTypes as $value => $label)
                     <option value="{{ $value }}">{{ $label }}</option>
                 @endforeach
             </select>
-            <input name="category" placeholder="Expense category" required class="rounded-lg border border-slate-300 px-4 py-3 text-sm">
+            <div>
+                <input name="category" list="expense-categories" placeholder="Expense category" required class="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm">
+                <datalist id="expense-categories">
+                    @foreach ($expenseCategories as $category)
+                        <option value="{{ $category }}"></option>
+                    @endforeach
+                </datalist>
+                <p class="mt-1 text-xs text-slate-500">Choose a category or type a new one.</p>
+            </div>
+            <input name="pay_to" placeholder="Pay to" class="rounded-lg border border-slate-300 px-4 py-3 text-sm">
             <input name="amount" type="number" min="0.01" step="0.01" placeholder="Amount" required class="rounded-lg border border-slate-300 px-4 py-3 text-sm">
-            <input name="expense_date" type="date" value="{{ now()->format('Y-m-d') }}" required class="rounded-lg border border-slate-300 px-4 py-3 text-sm">
             <input name="reference_no" placeholder="Reference" class="rounded-lg border border-slate-300 px-4 py-3 text-sm">
-            <input name="remarks" placeholder="Notes" class="rounded-lg border border-slate-300 px-4 py-3 text-sm">
+            <textarea name="remarks" rows="4" placeholder="Notes" class="rounded-lg border border-slate-300 px-4 py-3 text-sm md:col-span-2"></textarea>
         </div>
         <button class="mt-4 rounded-lg bg-rose-700 px-5 py-3 text-sm font-semibold text-white">Save Expense</button>
     </form>

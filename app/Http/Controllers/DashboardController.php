@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Collection;
+use App\Models\Expense;
 use App\Models\Member;
 use Carbon\Carbon;
 use Illuminate\View\View;
@@ -50,7 +51,7 @@ class DashboardController extends Controller
             'paidMembersCount' => $paidMembersCount,
             'unpaidMembersCount' => max($activeMembersCount - $paidMembersCount, 0),
             'paidRate' => $activeMembersCount > 0 ? round(($paidMembersCount / $activeMembersCount) * 100) : 0,
-            'unpaidMembers' => Member::with('hugpongBanay')->active()->whereNotIn('id', $paidMemberIds)->orderBy('full_name')->get(),
+            'recentExpenses' => Expense::with('encoder')->latest('expense_date')->latest()->limit(6)->get(),
             'recentCollections' => Collection::with(['member', 'encoder'])->latest('collection_date')->latest()->limit(8)->get(),
         ]);
     }

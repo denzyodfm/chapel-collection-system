@@ -14,6 +14,7 @@ class Expense extends Model
     protected $fillable = [
         'fund_type',
         'category',
+        'pay_to',
         'amount',
         'expense_date',
         'reference_no',

@@ -19,6 +19,15 @@ class LedgerController extends Controller
         'general' => 'Total Chapel Fund',
     ];
 
+    public const EXPENSE_CATEGORIES = [
+        'Repairs',
+        'Maintenance',
+        'Electric Bill',
+        'Water Bill',
+        'ICP Share from BG',
+        'Miscellaneous',
+    ];
+
     public function index(Request $request): View
     {
         $validated = $request->validate([
@@ -72,7 +81,7 @@ class LedgerController extends Controller
                 'date' => $expense->expense_date,
                 'fund_type' => $expense->fund_type,
                 'source' => 'Expense',
-                'description' => $expense->category,
+                'description' => $expense->pay_to ? "{$expense->category} - {$expense->pay_to}" : $expense->category,
                 'reference_no' => $expense->reference_no,
                 'credit' => 0.0,
                 'debit' => (float) $expense->amount,
@@ -113,6 +122,7 @@ class LedgerController extends Controller
             'rows' => $rows,
             'fundTypes' => self::FUND_TYPES,
             'fundSummaries' => $fundSummaries,
+            'expenseCategories' => self::EXPENSE_CATEGORIES,
         ]);
     }
 
@@ -138,6 +148,7 @@ class LedgerController extends Controller
         $data = $request->validate([
             'fund_type' => ['required', Rule::in(array_keys(self::FUND_TYPES))],
             'category' => ['required', 'string', 'max:150'],
+            'pay_to' => ['nullable', 'string', 'max:150'],
             'amount' => ['required', 'numeric', 'gt:0', 'max:999999999.99'],
             'expense_date' => ['required', 'date', 'before_or_equal:today'],
             'reference_no' => ['nullable', 'string', 'max:100'],

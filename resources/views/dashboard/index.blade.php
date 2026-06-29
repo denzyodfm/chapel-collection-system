@@ -75,20 +75,25 @@
 <section class="mt-6 grid gap-6 xl:grid-cols-[1fr_1.35fr]">
     <article class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
         <div class="flex items-center justify-between gap-4">
-            <h2 class="text-lg font-bold text-sky-950">Unpaid Balik Gasa</h2>
-            <span class="rounded-full bg-rose-50 px-3 py-1 text-sm font-semibold text-rose-700">{{ $unpaidMembers->count() }}</span>
+            <h2 class="text-lg font-bold text-sky-950">Recent Expenses</h2>
+            <a href="{{ route('ledger.index') }}" class="text-sm font-semibold text-sky-700">Open ledger</a>
         </div>
         <div class="mt-4 divide-y divide-slate-100">
-            @forelse ($unpaidMembers as $member)
+            @forelse ($recentExpenses as $expense)
                 <div class="flex items-center justify-between gap-4 py-3">
                     <div>
-                        <p class="font-semibold">{{ $member->full_name }}</p>
-                        <p class="text-sm text-slate-500">{{ $member->member_id }} - {{ $member->hugpongBanay?->name ?: 'No Hugpong Banay set' }}</p>
+                        <p class="font-semibold">{{ $expense->category }}</p>
+                        <p class="text-sm text-slate-500">
+                            {{ $expense->expense_date->format('M d, Y') }}
+                            @if ($expense->pay_to)
+                                - {{ $expense->pay_to }}
+                            @endif
+                        </p>
                     </div>
-                    <a href="{{ route('balik-gasa.index', ['month' => $currentMonth]) }}" class="text-sm font-semibold text-sky-700">Monitor</a>
+                    <p class="text-right font-bold text-rose-700">PHP {{ number_format((float) $expense->amount, 2) }}</p>
                 </div>
             @empty
-                <p class="py-6 text-sm text-slate-500">All active members are paid for this month.</p>
+                <p class="py-6 text-sm text-slate-500">No expenses recorded yet.</p>
             @endforelse
         </div>
     </article>

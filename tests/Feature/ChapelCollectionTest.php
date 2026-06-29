@@ -24,7 +24,7 @@ class ChapelCollectionTest extends TestCase
             ->get(route('dashboard'))
             ->assertOk()
             ->assertSee('Dashboard')
-            ->assertSee('Unpaid Balik Gasa');
+            ->assertSee('Recent Expenses');
     }
 
     public function test_valid_login_redirects_to_dashboard(): void
@@ -352,6 +352,7 @@ class ChapelCollectionTest extends TestCase
             ->post(route('ledger.expenses.store'), [
                 'fund_type' => Collection::DONATION,
                 'category' => 'Chapel supplies',
+                'pay_to' => 'Local hardware',
                 'amount' => 300,
                 'expense_date' => '2026-06-02',
                 'reference_no' => 'EXP-001',
@@ -367,7 +368,32 @@ class ChapelCollectionTest extends TestCase
             'fund_type' => Collection::DONATION,
             'amount' => 300,
             'reference_no' => 'EXP-001',
+            'pay_to' => 'Local hardware',
         ]);
+    }
+
+    public function test_dashboard_shows_recent_expenses(): void
+    {
+        $viewer = User::factory()->create(['role' => 'viewer']);
+        $treasurer = User::factory()->create(['role' => 'treasurer']);
+
+        Expense::create([
+            'fund_type' => Collection::BALIK_GASA,
+            'category' => 'Electric Bill',
+            'pay_to' => 'Power Company',
+            'amount' => 1200,
+            'expense_date' => '2026-06-29',
+            'encoded_by' => $treasurer->id,
+        ]);
+
+        $this->actingAs($viewer)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee('Recent Expenses')
+            ->assertSee('Electric Bill')
+            ->assertSee('Power Company')
+            ->assertSee('PHP 1,200.00')
+            ->assertDontSee('Unpaid Balik Gasa');
     }
 
     public function test_total_chapel_fund_summarizes_all_collection_funds(): void
