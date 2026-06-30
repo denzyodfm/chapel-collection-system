@@ -103,7 +103,14 @@ class MemberController extends Controller
             'delete_confirmation' => ['required', 'in:delete'],
         ]);
 
-        abort_if($member->collections()->exists(), 422, 'Members with collection history cannot be deleted.');
+        if (HugpongBanay::where('current_leader_id', $member->id)->exists() || $member->leaderHistories()->exists()) {
+            return back()->with('error', 'This member cannot be deleted because they are or have been a Hugpong Banay leader.');
+        }
+
+        if ($member->collections()->whereIn('collection_type', [Collection::BALIK_GASA, Collection::DONATION])->exists()) {
+            return back()->with('error', 'This member cannot be deleted because they have Balik Gasa or Donation payment history.');
+        }
+
         $member->delete();
 
         return redirect()->route('members.index')->with('success', 'Member deleted successfully.');

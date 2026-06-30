@@ -154,6 +154,66 @@ class ChapelCollectionTest extends TestCase
         ]);
     }
 
+    public function test_member_who_is_or_was_hugpong_banay_leader_cannot_be_deleted(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $hugpongBanay = HugpongBanay::create(['name' => 'Leader Guard Hugpong']);
+        $member = Member::create([
+            'full_name' => 'Protected Leader',
+            'hugpong_banay_id' => $hugpongBanay->id,
+            'status' => 'active',
+        ]);
+
+        $hugpongBanay->update(['current_leader_id' => $member->id]);
+        HugpongBanayLeaderHistory::create([
+            'hugpong_banay_id' => $hugpongBanay->id,
+            'member_id' => $member->id,
+            'started_at' => '2026-01-01',
+        ]);
+
+        $this->actingAs($admin)
+            ->from(route('members.show', $member))
+            ->delete(route('members.destroy', $member), [
+                'delete_confirmation' => 'delete',
+            ])
+            ->assertRedirect(route('members.show', $member))
+            ->assertSessionHas('error', 'This member cannot be deleted because they are or have been a Hugpong Banay leader.');
+
+        $this->assertDatabaseHas('members', [
+            'id' => $member->id,
+        ]);
+    }
+
+    public function test_member_with_balik_gasa_or_donation_payments_cannot_be_deleted(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $member = Member::create([
+            'full_name' => 'Protected Payer',
+            'status' => 'active',
+        ]);
+
+        Collection::create([
+            'member_id' => $member->id,
+            'collection_type' => Collection::BALIK_GASA,
+            'amount' => 100,
+            'collection_date' => '2026-06-01',
+            'collection_month' => '2026-06',
+            'encoded_by' => $admin->id,
+        ]);
+
+        $this->actingAs($admin)
+            ->from(route('members.show', $member))
+            ->delete(route('members.destroy', $member), [
+                'delete_confirmation' => 'delete',
+            ])
+            ->assertRedirect(route('members.show', $member))
+            ->assertSessionHas('error', 'This member cannot be deleted because they have Balik Gasa or Donation payment history.');
+
+        $this->assertDatabaseHas('members', [
+            'id' => $member->id,
+        ]);
+    }
+
     public function test_halad_can_be_recorded_without_a_member(): void
     {
         $treasurer = User::factory()->create(['role' => 'treasurer']);
