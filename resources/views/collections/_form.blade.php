@@ -34,7 +34,7 @@
 </div>
 <p id="halad_hint" class="mt-4 hidden rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800">Offering is recorded as one total mass collection from all members. No member is required.</p>
 <div class="mt-6 flex flex-wrap gap-3">
-    <button class="rounded-lg bg-sky-800 px-5 py-3 text-sm font-semibold text-white hover:bg-sky-900">Save Collection</button>
+    <button class="inline-flex items-center gap-2 rounded-lg bg-sky-800 px-5 py-3 text-sm font-semibold text-white hover:bg-sky-900"><x-icon name="save" class="h-4 w-4" /> Save Collection</button>
     <a href="{{ route('collections.index') }}" class="rounded-lg border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-100">Cancel</a>
 </div>
 <script>

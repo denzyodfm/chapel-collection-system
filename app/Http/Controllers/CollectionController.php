@@ -49,10 +49,17 @@ class CollectionController extends Controller
         ]);
     }
 
-    public function create(): View
+    public function create(Request $request): View
     {
+        $validated = $request->validate([
+            'collection_type' => ['nullable', Rule::in(array_keys(Collection::TYPES))],
+        ]);
+
         return view('collections.create', [
-            'collection' => new Collection(['collection_date' => now()]),
+            'collection' => new Collection([
+                'collection_date' => now(),
+                'collection_type' => $validated['collection_type'] ?? null,
+            ]),
             'members' => Member::with('hugpongBanay')->active()->orderBy('full_name')->get(),
             'types' => Collection::TYPES,
         ]);

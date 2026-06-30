@@ -34,7 +34,10 @@
             <input name="reference_no" placeholder="Reference" class="rounded-lg border border-slate-300 px-4 py-3 text-sm">
             <input name="remarks" placeholder="Notes / Source" class="rounded-lg border border-slate-300 px-4 py-3 text-sm">
         </div>
-        <button class="mt-4 rounded-lg bg-sky-800 px-5 py-3 text-sm font-semibold text-white">Post Ledger Entry</button>
+        <button class="mt-4 inline-flex items-center gap-2 rounded-lg bg-sky-800 px-5 py-3 text-sm font-semibold text-white">
+            <x-icon name="save" class="h-4 w-4" />
+            Post Ledger Entry
+        </button>
     </form>
 
     <form method="POST" action="{{ route('ledger.expenses.store') }}" class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
@@ -65,7 +68,10 @@
             <input name="reference_no" placeholder="Reference" class="rounded-lg border border-slate-300 px-4 py-3 text-sm">
             <textarea name="remarks" rows="4" placeholder="Notes" class="rounded-lg border border-slate-300 px-4 py-3 text-sm md:col-span-2"></textarea>
         </div>
-        <button class="mt-4 rounded-lg bg-rose-700 px-5 py-3 text-sm font-semibold text-white">Save Expense</button>
+        <button class="mt-4 inline-flex items-center gap-2 rounded-lg bg-rose-700 px-5 py-3 text-sm font-semibold text-white">
+            <x-icon name="save" class="h-4 w-4" />
+            Save Expense
+        </button>
     </form>
 </section>
 @endif
@@ -79,27 +85,43 @@
     </select>
     <input name="date_from" type="date" value="{{ request('date_from') }}" class="rounded-lg border border-slate-300 px-4 py-3 text-sm">
     <input name="date_to" type="date" value="{{ request('date_to') }}" class="rounded-lg border border-slate-300 px-4 py-3 text-sm">
-    <button class="rounded-lg bg-slate-800 px-5 py-3 text-sm font-semibold text-white">Filter Ledger</button>
+    <button class="inline-flex items-center justify-center gap-2 rounded-lg bg-slate-800 px-5 py-3 text-sm font-semibold text-white">
+        <x-icon name="filter" class="h-4 w-4" />
+        Filter Ledger
+    </button>
 </form>
 
 <section class="mt-5 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
-    <table class="min-w-full text-left text-sm">
-        <thead class="bg-slate-50 text-xs uppercase text-slate-500"><tr><th class="px-4 py-3">Date</th><th class="px-4 py-3">Fund</th><th class="px-4 py-3">Source</th><th class="px-4 py-3">Reference</th><th class="px-4 py-3">Description</th><th class="px-4 py-3 text-right">Credit</th><th class="px-4 py-3 text-right">Debit</th></tr></thead>
-        <tbody class="divide-y divide-slate-100">
-            @forelse ($rows as $row)
-                <tr>
-                    <td class="px-4 py-3">{{ $row['date']?->format('M d, Y') }}</td>
-                    <td class="px-4 py-3">{{ $fundTypes[$row['fund_type']] ?? $row['fund_type'] }}</td>
-                    <td class="px-4 py-3">{{ $row['source'] }}</td>
-                    <td class="px-4 py-3">{{ $row['reference_no'] ?: '-' }}</td>
-                    <td class="px-4 py-3">{{ $row['description'] }}</td>
-                    <td class="px-4 py-3 text-right font-semibold text-emerald-700">{{ $row['credit'] > 0 ? 'PHP '.number_format($row['credit'], 2) : '-' }}</td>
-                    <td class="px-4 py-3 text-right font-semibold text-rose-700">{{ $row['debit'] > 0 ? 'PHP '.number_format($row['debit'], 2) : '-' }}</td>
-                </tr>
-            @empty
-                <tr><td colspan="7" class="px-4 py-8 text-center text-slate-500">No ledger entries found.</td></tr>
-            @endforelse
-        </tbody>
-    </table>
+    <div class="overflow-x-auto">
+        <table class="min-w-full text-left text-sm">
+            <thead class="bg-slate-50 text-xs uppercase text-slate-500"><tr><th class="px-4 py-3">Date</th><th class="px-4 py-3">Fund</th><th class="px-4 py-3">Source</th><th class="px-4 py-3">Reference</th><th class="px-4 py-3">Description</th><th class="px-4 py-3 text-right">Credit</th><th class="px-4 py-3 text-right">Debit</th><th class="px-4 py-3 text-right">Actions</th></tr></thead>
+            <tbody class="divide-y divide-slate-100">
+                @forelse ($rows as $row)
+                    <tr>
+                        <td class="px-4 py-3">{{ $row['date']?->format('M d, Y') }}</td>
+                        <td class="px-4 py-3">{{ $fundTypes[$row['fund_type']] ?? $row['fund_type'] }}</td>
+                        <td class="px-4 py-3">{{ $row['source'] }}</td>
+                        <td class="px-4 py-3">{{ $row['reference_no'] ?: '-' }}</td>
+                        <td class="px-4 py-3">{{ $row['description'] }}</td>
+                        <td class="px-4 py-3 text-right font-semibold text-emerald-700">{{ $row['credit'] > 0 ? 'PHP '.number_format($row['credit'], 2) : '-' }}</td>
+                        <td class="px-4 py-3 text-right font-semibold text-rose-700">{{ $row['debit'] > 0 ? 'PHP '.number_format($row['debit'], 2) : '-' }}</td>
+                        <td class="px-4 py-3 text-right">
+                            @if ($row['source'] === 'Expense' && auth()->user()->hasAnyRole(['admin', 'treasurer']))
+                                <a href="{{ route('ledger.expenses.edit', $row['id']) }}" class="inline-flex items-center gap-1 font-semibold text-amber-700"><x-icon name="edit" class="h-3.5 w-3.5" /> Edit</a>
+                                <form class="inline" method="POST" action="{{ route('ledger.expenses.destroy', $row['id']) }}" onsubmit="return confirm('Delete this expense?')">
+                                    @csrf @method('DELETE')
+                                    <button class="ml-3 inline-flex items-center gap-1 font-semibold text-rose-700"><x-icon name="trash" class="h-3.5 w-3.5" /> Delete</button>
+                                </form>
+                            @else
+                                <span class="text-slate-400">-</span>
+                            @endif
+                        </td>
+                    </tr>
+                @empty
+                    <tr><td colspan="8" class="px-4 py-8 text-center text-slate-500">No ledger entries found.</td></tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
 </section>
 @endsection

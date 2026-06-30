@@ -78,6 +78,7 @@ class LedgerController extends Controller
             ->when($dateTo, fn ($query, $date) => $query->whereDate('expense_date', '<=', $date))
             ->get()
             ->map(fn (Expense $expense) => [
+                'id' => $expense->id,
                 'date' => $expense->expense_date,
                 'fund_type' => $expense->fund_type,
                 'source' => 'Expense',
@@ -145,7 +146,40 @@ class LedgerController extends Controller
 
     public function storeExpense(Request $request): RedirectResponse
     {
-        $data = $request->validate([
+        $data = $this->validatedExpense($request);
+        $data['encoded_by'] = $request->user()->id;
+
+        Expense::create($data);
+
+        return redirect()->route('ledger.index')->with('success', 'Expense encoded and deducted from chapel funds.');
+    }
+
+    public function editExpense(Expense $expense): View
+    {
+        return view('ledger.edit-expense', [
+            'expense' => $expense,
+            'fundTypes' => self::FUND_TYPES,
+            'expenseCategories' => self::EXPENSE_CATEGORIES,
+        ]);
+    }
+
+    public function updateExpense(Request $request, Expense $expense): RedirectResponse
+    {
+        $expense->update($this->validatedExpense($request));
+
+        return redirect()->route('ledger.index')->with('success', 'Expense updated.');
+    }
+
+    public function destroyExpense(Expense $expense): RedirectResponse
+    {
+        $expense->delete();
+
+        return redirect()->route('ledger.index')->with('success', 'Expense deleted.');
+    }
+
+    private function validatedExpense(Request $request): array
+    {
+        return $request->validate([
             'fund_type' => ['required', Rule::in(array_keys(self::FUND_TYPES))],
             'category' => ['required', 'string', 'max:150'],
             'pay_to' => ['nullable', 'string', 'max:150'],
@@ -154,10 +188,5 @@ class LedgerController extends Controller
             'reference_no' => ['nullable', 'string', 'max:100'],
             'remarks' => ['nullable', 'string', 'max:1000'],
         ]);
-        $data['encoded_by'] = $request->user()->id;
-
-        Expense::create($data);
-
-        return redirect()->route('ledger.index')->with('success', 'Expense encoded and deducted from chapel funds.');
     }
 }

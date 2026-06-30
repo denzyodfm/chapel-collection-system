@@ -3,7 +3,7 @@
 @section('page-title', 'Offering Monthly Monitoring')
 
 @section('page-actions')
-<a href="{{ route('collections.create', ['collection_type' => \App\Models\Collection::HALAD]) }}" class="rounded-lg bg-sky-800 px-5 py-3 text-sm font-semibold text-white hover:bg-sky-900">Add Offering</a>
+<a href="{{ route('collections.create', ['collection_type' => \App\Models\Collection::HALAD]) }}" class="inline-flex items-center gap-2 rounded-lg bg-sky-800 px-5 py-3 text-sm font-semibold text-white hover:bg-sky-900"><x-icon name="plus" class="h-4 w-4" /> Add Offering</a>
 @endsection
 
 @section('content')
@@ -16,7 +16,7 @@
             <label class="grid gap-2 text-sm font-medium text-slate-700">Search Offering
                 <input type="search" data-table-filter-target="offerings-table" placeholder="Type reference, notes, date, or amount" class="rounded-lg border border-slate-300 px-4 py-3">
             </label>
-            <button class="rounded-lg bg-sky-800 px-5 py-3 text-sm font-semibold text-white">View Month</button>
+            <button class="inline-flex items-center justify-center gap-2 rounded-lg bg-sky-800 px-5 py-3 text-sm font-semibold text-white"><x-icon name="filter" class="h-4 w-4" /> View Month</button>
         </div>
     </form>
 
@@ -39,7 +39,7 @@
         <input name="amount" type="number" min="0.01" step="0.01" placeholder="Offering amount" required class="rounded-lg border border-slate-300 px-4 py-3 text-sm">
         <input name="reference_no" placeholder="Reference" class="rounded-lg border border-slate-300 px-4 py-3 text-sm">
         <input name="remarks" placeholder="Offering notes after mass" class="rounded-lg border border-slate-300 px-4 py-3 text-sm">
-        <button class="rounded-lg bg-amber-600 px-5 py-3 text-sm font-semibold text-white">Post Offering</button>
+        <button class="inline-flex items-center justify-center gap-2 rounded-lg bg-amber-600 px-5 py-3 text-sm font-semibold text-white"><x-icon name="save" class="h-4 w-4" /> Post Offering</button>
     </form>
 </section>
 @endif
@@ -55,7 +55,7 @@
     <div class="overflow-x-auto">
         <table id="offerings-table" class="min-w-full text-left text-sm">
             <thead class="bg-slate-50 text-xs uppercase text-slate-500">
-                <tr><th class="px-4 py-3">Date</th><th class="px-4 py-3">Reference</th><th class="px-4 py-3">Notes</th><th class="px-4 py-3">Encoded By</th><th class="px-4 py-3 text-right">Amount</th></tr>
+                <tr><th class="px-4 py-3">Date</th><th class="px-4 py-3">Reference</th><th class="px-4 py-3">Notes</th><th class="px-4 py-3">Encoded By</th><th class="px-4 py-3 text-right">Amount</th><th class="px-4 py-3 text-right">Actions</th></tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
                 @forelse ($offerings as $offering)
@@ -65,9 +65,20 @@
                         <td class="px-4 py-3">{{ $offering->remarks ?: '-' }}</td>
                         <td class="px-4 py-3">{{ $offering->encoder?->name ?: '-' }}</td>
                         <td class="px-4 py-3 text-right font-semibold">PHP {{ number_format((float) $offering->amount, 2) }}</td>
+                        <td class="px-4 py-3 text-right">
+                            @if (auth()->user()->hasAnyRole(['admin', 'treasurer']))
+                                <a href="{{ route('collections.edit', $offering) }}" class="inline-flex items-center gap-1 font-semibold text-amber-700"><x-icon name="edit" class="h-3.5 w-3.5" /> Edit</a>
+                                <form class="inline" method="POST" action="{{ route('collections.destroy', $offering) }}" onsubmit="return confirm('Delete this offering?')">
+                                    @csrf @method('DELETE')
+                                    <button class="ml-3 inline-flex items-center gap-1 font-semibold text-rose-700"><x-icon name="trash" class="h-3.5 w-3.5" /> Delete</button>
+                                </form>
+                            @else
+                                <span class="text-slate-400">-</span>
+                            @endif
+                        </td>
                     </tr>
                 @empty
-                    <tr><td colspan="5" class="px-4 py-8 text-center text-slate-500">No offerings recorded for this month.</td></tr>
+                    <tr><td colspan="6" class="px-4 py-8 text-center text-slate-500">No offerings recorded for this month.</td></tr>
                 @endforelse
             </tbody>
         </table>

@@ -18,28 +18,29 @@
                     <span class="rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700">{{ ucfirst(auth()->user()->role) }}</span>
                 </div>
 
-                <nav class="grid gap-1 px-4 py-5 text-sm font-medium">
+                <nav class="grid gap-1 px-4 py-5 text-sm font-medium sm:grid-cols-2 lg:grid-cols-1">
                     @php
                         $nav = [
-                            ['Dashboard', 'dashboard', 'dashboard'],
-                            ['Balik Gasa Monitor', 'balik-gasa.index', 'balik-gasa*'],
-                            ['Donation Monitor', 'donations.index', 'donations*'],
-                            ['Offering Monitor', 'offerings.index', 'offerings*'],
-                            ['Reports', 'reports.index', 'reports*'],
-                            ['Ledger', 'ledger.index', 'ledger*'],
+                            ['Dashboard', 'dashboard', 'dashboard', 'dashboard'],
+                            ['Balik Gasa Monitor', 'balik-gasa.index', 'balik-gasa*', 'calendar'],
+                            ['Donation Monitor', 'donations.index', 'donations*', 'gift'],
+                            ['Offering Monitor', 'offerings.index', 'offerings*', 'coins'],
+                            ['Reports', 'reports.index', 'reports*', 'report'],
+                            ['Ledger', 'ledger.index', 'ledger*', 'ledger'],
                         ];
                         if (auth()->user()->hasAnyRole(['admin', 'treasurer'])) {
-                            $nav[] = ['Members', 'members.index', 'members*'];
-                            $nav[] = ['Hugpong Banay', 'hugpong-banays.index', 'hugpong-banays*'];
-                            $nav[] = ['Collections', 'collections.index', 'collections*'];
+                            $nav[] = ['Members', 'members.index', 'members*', 'users'];
+                            $nav[] = ['Hugpong Banay', 'hugpong-banays.index', 'hugpong-banays*', 'home'];
+                            $nav[] = ['Collections', 'collections.index', 'collections*', 'plus'];
                         }
                         if (auth()->user()->role === 'admin') {
-                            $nav[] = ['User Accounts', 'users.index', 'users*'];
+                            $nav[] = ['User Accounts', 'users.index', 'users*', 'users'];
                         }
                     @endphp
 
-                    @foreach ($nav as [$label, $route, $active])
-                        <a href="{{ route($route) }}" class="rounded-lg px-4 py-3 {{ request()->routeIs($active) ? 'bg-sky-100 text-sky-900' : 'text-slate-600 hover:bg-slate-100 hover:text-sky-900' }}">
+                    @foreach ($nav as [$label, $route, $active, $icon])
+                        <a href="{{ route($route) }}" class="flex items-center gap-3 rounded-lg px-4 py-3 {{ request()->routeIs($active) ? 'bg-sky-100 text-sky-900' : 'text-slate-600 hover:bg-slate-100 hover:text-sky-900' }}">
+                            <x-icon :name="$icon" class="h-4 w-4 shrink-0" />
                             {{ $label }}
                         </a>
                     @endforeach

@@ -13,7 +13,7 @@
     <label class="grid gap-2 text-sm font-medium text-slate-700">Search Member
         <input type="search" data-table-filter-target="balik-gasa-table" placeholder="Type a member name" class="rounded-lg border border-slate-300 px-4 py-3">
     </label>
-    <button class="rounded-lg bg-sky-800 px-5 py-3 text-sm font-semibold text-white">View Month</button>
+    <button class="inline-flex items-center justify-center gap-2 rounded-lg bg-sky-800 px-5 py-3 text-sm font-semibold text-white"><x-icon name="filter" class="h-4 w-4" /> View Month</button>
 </form>
 
 <section class="mb-5 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
@@ -47,7 +47,7 @@
     </div>
     <div class="overflow-x-auto">
         <table id="balik-gasa-table" class="min-w-full text-left text-sm">
-            <thead class="bg-slate-50 text-xs uppercase text-slate-500"><tr><th class="px-4 py-3">Member</th><th class="px-4 py-3">Status</th><th class="px-4 py-3 text-right">Amount</th><th class="px-4 py-3">Payment Date</th><th class="px-4 py-3">Balik Gasa Payment</th></tr></thead>
+            <thead class="bg-slate-50 text-xs uppercase text-slate-500"><tr><th class="px-4 py-3">Member</th><th class="px-4 py-3">Status</th><th class="px-4 py-3 text-right">Amount</th><th class="px-4 py-3">Payment Date</th><th class="px-4 py-3">Balik Gasa Payment</th><th class="px-4 py-3 text-right">Actions</th></tr></thead>
             <tbody class="divide-y divide-slate-100">
                 @forelse ($members as $member)
                     @php $payment = $payments->get($member->id); @endphp
@@ -62,7 +62,7 @@
                                     @csrf
                                     <input type="hidden" name="collection_month" value="{{ $month }}">
                                     <input name="amount" type="number" min="0.01" step="0.01" placeholder="Amount" required class="w-28 rounded-lg border border-slate-300 px-3 py-2 text-sm">
-                                    <button class="rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-white">Pay</button>
+                                    <button class="inline-flex items-center justify-center gap-2 rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-white"><x-icon name="save" class="h-4 w-4" /> Pay</button>
                                 </form>
                             @elseif ($payment)
                                 <span class="rounded-lg bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-500">Already paid</span>
@@ -70,9 +70,20 @@
                                 <span class="text-slate-400">-</span>
                             @endif
                         </td>
+                        <td class="px-4 py-3 text-right">
+                            @if ($payment && auth()->user()->hasAnyRole(['admin', 'treasurer']))
+                                <a href="{{ route('collections.edit', $payment) }}" class="inline-flex items-center gap-1 font-semibold text-amber-700"><x-icon name="edit" class="h-3.5 w-3.5" /> Edit</a>
+                                <form class="inline" method="POST" action="{{ route('collections.destroy', $payment) }}" onsubmit="return confirm('Delete this Balik Gasa payment?')">
+                                    @csrf @method('DELETE')
+                                    <button class="ml-3 inline-flex items-center gap-1 font-semibold text-rose-700"><x-icon name="trash" class="h-3.5 w-3.5" /> Delete</button>
+                                </form>
+                            @else
+                                <span class="text-slate-400">-</span>
+                            @endif
+                        </td>
                     </tr>
                 @empty
-                    <tr><td colspan="5" class="px-4 py-8 text-center text-slate-500">No active members found for this Hugpong Banay.</td></tr>
+                    <tr><td colspan="6" class="px-4 py-8 text-center text-slate-500">No active members found for this Hugpong Banay.</td></tr>
                 @endforelse
             </tbody>
         </table>

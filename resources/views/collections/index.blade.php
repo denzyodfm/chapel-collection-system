@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('page-title', 'Collection Entries')
 @section('page-actions')
-<a href="{{ route('collections.create') }}" class="rounded-lg bg-sky-800 px-5 py-3 text-sm font-semibold text-white hover:bg-sky-900">Add Collection</a>
+<a href="{{ route('collections.create') }}" class="inline-flex items-center gap-2 rounded-lg bg-sky-800 px-5 py-3 text-sm font-semibold text-white hover:bg-sky-900"><x-icon name="plus" class="h-4 w-4" /> Add Collection</a>
 @endsection
 
 @section('content')
@@ -38,7 +38,7 @@
             </label>
         </div>
         <div class="grid content-end">
-            <button class="rounded-lg bg-slate-800 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-900">Filter</button>
+            <button class="inline-flex items-center justify-center gap-2 rounded-lg bg-slate-800 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-900"><x-icon name="filter" class="h-4 w-4" /> Filter</button>
         </div>
     </div>
 </form>

@@ -32,6 +32,6 @@
     </label>
 </div>
 <div class="mt-6 flex flex-wrap gap-3">
-    <button class="rounded-lg bg-sky-800 px-5 py-3 text-sm font-semibold text-white hover:bg-sky-900">Save Member</button>
+    <button class="inline-flex items-center gap-2 rounded-lg bg-sky-800 px-5 py-3 text-sm font-semibold text-white hover:bg-sky-900"><x-icon name="save" class="h-4 w-4" /> Save Member</button>
     <a href="{{ route('members.index') }}" class="rounded-lg border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-100">Cancel</a>
 </div>

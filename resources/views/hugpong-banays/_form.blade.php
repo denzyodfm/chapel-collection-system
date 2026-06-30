@@ -28,6 +28,6 @@
 </div>
 <p class="mt-4 text-sm text-slate-500">If the selected leader belongs to another Hugpong Banay, the system will move that member to this Hugpong Banay and record the new leader tenure.</p>
 <div class="mt-6 flex flex-wrap gap-3">
-    <button class="rounded-lg bg-sky-800 px-5 py-3 text-sm font-semibold text-white hover:bg-sky-900">Save Hugpong Banay</button>
+    <button class="inline-flex items-center gap-2 rounded-lg bg-sky-800 px-5 py-3 text-sm font-semibold text-white hover:bg-sky-900"><x-icon name="save" class="h-4 w-4" /> Save Hugpong Banay</button>
     <a href="{{ route('hugpong-banays.index') }}" class="rounded-lg border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-100">Cancel</a>
 </div>

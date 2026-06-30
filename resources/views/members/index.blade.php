@@ -2,7 +2,7 @@
 
 @section('page-title', 'Members Management')
 @section('page-actions')
-<a href="{{ route('members.create') }}" class="rounded-lg bg-sky-800 px-5 py-3 text-sm font-semibold text-white hover:bg-sky-900">Add Member</a>
+<a href="{{ route('members.create') }}" class="inline-flex items-center gap-2 rounded-lg bg-sky-800 px-5 py-3 text-sm font-semibold text-white hover:bg-sky-900"><x-icon name="plus" class="h-4 w-4" /> Add Member</a>
 @endsection
 
 @section('content')
@@ -19,31 +19,33 @@
         <option value="active" @selected(request('status') === 'active')>Active</option>
         <option value="inactive" @selected(request('status') === 'inactive')>Inactive</option>
     </select>
-    <button class="rounded-lg bg-slate-800 px-5 py-3 text-sm font-semibold text-white">Filter</button>
+    <button class="inline-flex items-center justify-center gap-2 rounded-lg bg-slate-800 px-5 py-3 text-sm font-semibold text-white"><x-icon name="filter" class="h-4 w-4" /> Filter</button>
 </form>
 
 <div class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
-    <table id="members-table" class="min-w-full text-left text-sm">
-        <thead class="bg-slate-50 text-xs uppercase text-slate-500">
-            <tr><th class="px-4 py-3">Member ID</th><th class="px-4 py-3">Name</th><th class="px-4 py-3">Contact</th><th class="px-4 py-3">Address</th><th class="px-4 py-3">Hugpong Banay</th><th class="px-4 py-3">Status</th><th class="px-4 py-3 text-right">Actions</th></tr>
-        </thead>
-        <tbody class="divide-y divide-slate-100">
-            @foreach ($members as $member)
-                <tr>
-                    <td class="px-4 py-3 font-semibold"><button type="button" data-balik-gasa-member-url="{{ route('members.balik-gasa-year', $member) }}" data-balik-gasa-year="{{ now()->year }}" class="font-semibold text-sky-700 hover:underline">{{ $member->member_id }}</button></td>
-                    <td class="px-4 py-3">{{ $member->full_name }}</td>
-                    <td class="px-4 py-3">{{ $member->contact_number ?: '-' }}</td>
-                    <td class="px-4 py-3">{{ $member->address_purok ?: '-' }}</td>
-                    <td class="px-4 py-3">{{ $member->hugpongBanay?->name ?: 'Unassigned' }}</td>
-                    <td class="px-4 py-3"><span class="rounded-full px-3 py-1 text-xs font-semibold {{ $member->status === 'active' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600' }}">{{ ucfirst($member->status) }}</span></td>
-                    <td class="px-4 py-3 text-right">
-                        <a class="font-semibold text-sky-700" href="{{ route('members.show', $member) }}">View</a>
-                        <a class="ml-3 font-semibold text-amber-700" href="{{ route('members.edit', $member) }}">Edit</a>
-                    </td>
-                </tr>
-            @endforeach
-        </tbody>
-    </table>
+    <div class="overflow-x-auto">
+        <table id="members-table" class="min-w-full text-left text-sm">
+            <thead class="bg-slate-50 text-xs uppercase text-slate-500">
+                <tr><th class="px-4 py-3">Member ID</th><th class="px-4 py-3">Name</th><th class="px-4 py-3">Contact</th><th class="px-4 py-3">Address</th><th class="px-4 py-3">Hugpong Banay</th><th class="px-4 py-3">Status</th><th class="px-4 py-3 text-right">Actions</th></tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                @foreach ($members as $member)
+                    <tr>
+                        <td class="px-4 py-3 font-semibold"><button type="button" data-balik-gasa-member-url="{{ route('members.balik-gasa-year', $member) }}" data-balik-gasa-year="{{ now()->year }}" class="font-semibold text-sky-700 hover:underline">{{ $member->member_id }}</button></td>
+                        <td class="px-4 py-3">{{ $member->full_name }}</td>
+                        <td class="px-4 py-3">{{ $member->contact_number ?: '-' }}</td>
+                        <td class="px-4 py-3">{{ $member->address_purok ?: '-' }}</td>
+                        <td class="px-4 py-3">{{ $member->hugpongBanay?->name ?: 'Unassigned' }}</td>
+                        <td class="px-4 py-3"><span class="rounded-full px-3 py-1 text-xs font-semibold {{ $member->status === 'active' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600' }}">{{ ucfirst($member->status) }}</span></td>
+                        <td class="px-4 py-3 text-right">
+                            <a class="font-semibold text-sky-700" href="{{ route('members.show', $member) }}">View</a>
+                            <a class="ml-3 font-semibold text-amber-700" href="{{ route('members.edit', $member) }}">Edit</a>
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
 </div>
 <div class="mt-5">{{ $members->links() }}</div>
 

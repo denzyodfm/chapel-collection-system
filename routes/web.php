@@ -33,6 +33,9 @@ Route::middleware('auth')->group(function (): void {
     Route::get('/ledger', [LedgerController::class, 'index'])->name('ledger.index');
     Route::post('/ledger/entries', [LedgerController::class, 'storeEntry'])->middleware('role:admin,treasurer')->name('ledger.entries.store');
     Route::post('/ledger/expenses', [LedgerController::class, 'storeExpense'])->middleware('role:admin,treasurer')->name('ledger.expenses.store');
+    Route::get('/ledger/expenses/{expense}/edit', [LedgerController::class, 'editExpense'])->middleware('role:admin,treasurer')->name('ledger.expenses.edit');
+    Route::put('/ledger/expenses/{expense}', [LedgerController::class, 'updateExpense'])->middleware('role:admin,treasurer')->name('ledger.expenses.update');
+    Route::delete('/ledger/expenses/{expense}', [LedgerController::class, 'destroyExpense'])->middleware('role:admin,treasurer')->name('ledger.expenses.destroy');
 
     Route::get('/balik-gasa', [BalikGasaController::class, 'index'])->name('balik-gasa.index');
     Route::post('/balik-gasa/{member}/quick-pay', [BalikGasaController::class, 'quickPay'])

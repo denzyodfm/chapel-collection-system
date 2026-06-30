@@ -3,7 +3,7 @@
 @section('page-title', 'Donation Monthly Monitoring')
 
 @section('page-actions')
-<a href="{{ route('collections.create', ['collection_type' => \App\Models\Collection::DONATION]) }}" class="rounded-lg bg-sky-800 px-5 py-3 text-sm font-semibold text-white hover:bg-sky-900">Add Donation</a>
+<a href="{{ route('collections.create', ['collection_type' => \App\Models\Collection::DONATION]) }}" class="inline-flex items-center gap-2 rounded-lg bg-sky-800 px-5 py-3 text-sm font-semibold text-white hover:bg-sky-900"><x-icon name="plus" class="h-4 w-4" /> Add Donation</a>
 @endsection
 
 @section('content')
@@ -17,7 +17,7 @@
     <label class="grid min-w-64 gap-2 text-sm font-medium text-slate-700">Search Member
         <input type="search" data-table-filter-target="donations-table" placeholder="Type a member name" class="rounded-lg border border-slate-300 px-4 py-3">
     </label>
-    <button class="rounded-lg bg-sky-800 px-5 py-3 text-sm font-semibold text-white">View Month</button>
+    <button class="inline-flex items-center justify-center gap-2 rounded-lg bg-sky-800 px-5 py-3 text-sm font-semibold text-white"><x-icon name="filter" class="h-4 w-4" /> View Month</button>
 </form>
 
 <section class="mb-5 grid gap-4 lg:grid-cols-[1fr_280px]">
@@ -82,7 +82,7 @@
                                         <input name="collection_date" type="date" value="{{ now()->format('Y-m-d') }}" class="rounded-lg border border-slate-300 px-3 py-2 text-sm">
                                         <input name="amount" type="number" min="0.01" step="0.01" placeholder="Amount" required class="rounded-lg border border-slate-300 px-3 py-2 text-sm">
                                         <input name="reference_no" placeholder="Reference" class="rounded-lg border border-slate-300 px-3 py-2 text-sm">
-                                        <button class="rounded-lg bg-sky-700 px-4 py-2 text-sm font-semibold text-white">Post</button>
+                                        <button class="inline-flex items-center justify-center gap-2 rounded-lg bg-sky-700 px-4 py-2 text-sm font-semibold text-white"><x-icon name="save" class="h-4 w-4" /> Post</button>
                                     </div>
                                     <input name="remarks" placeholder="Notes" class="rounded-lg border border-slate-300 px-3 py-2 text-sm">
                                 </form>
@@ -105,7 +105,7 @@
     </div>
     <div class="overflow-x-auto">
         <table class="min-w-full text-left text-sm">
-            <thead class="bg-slate-50 text-xs uppercase text-slate-500"><tr><th class="px-4 py-3">Date</th><th class="px-4 py-3">Member</th><th class="px-4 py-3">Reference</th><th class="px-4 py-3">Notes</th><th class="px-4 py-3 text-right">Amount</th></tr></thead>
+            <thead class="bg-slate-50 text-xs uppercase text-slate-500"><tr><th class="px-4 py-3">Date</th><th class="px-4 py-3">Member</th><th class="px-4 py-3">Reference</th><th class="px-4 py-3">Notes</th><th class="px-4 py-3 text-right">Amount</th><th class="px-4 py-3 text-right">Actions</th></tr></thead>
             <tbody class="divide-y divide-slate-100">
                 @forelse ($donations as $donation)
                     <tr>
@@ -114,9 +114,20 @@
                         <td class="px-4 py-3">{{ $donation->reference_no ?: '-' }}</td>
                         <td class="px-4 py-3">{{ $donation->remarks ?: '-' }}</td>
                         <td class="px-4 py-3 text-right font-semibold">PHP {{ number_format((float) $donation->amount, 2) }}</td>
+                        <td class="px-4 py-3 text-right">
+                            @if (auth()->user()->hasAnyRole(['admin', 'treasurer']))
+                                <a href="{{ route('collections.edit', $donation) }}" class="inline-flex items-center gap-1 font-semibold text-amber-700"><x-icon name="edit" class="h-3.5 w-3.5" /> Edit</a>
+                                <form class="inline" method="POST" action="{{ route('collections.destroy', $donation) }}" onsubmit="return confirm('Delete this donation?')">
+                                    @csrf @method('DELETE')
+                                    <button class="ml-3 inline-flex items-center gap-1 font-semibold text-rose-700"><x-icon name="trash" class="h-3.5 w-3.5" /> Delete</button>
+                                </form>
+                            @else
+                                <span class="text-slate-400">-</span>
+                            @endif
+                        </td>
                     </tr>
                 @empty
-                    <tr><td colspan="5" class="px-4 py-8 text-center text-slate-500">No donations recorded for this month.</td></tr>
+                    <tr><td colspan="6" class="px-4 py-8 text-center text-slate-500">No donations recorded for this month.</td></tr>
                 @endforelse
             </tbody>
         </table>

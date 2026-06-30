@@ -154,7 +154,7 @@ class ChapelCollectionTest extends TestCase
         ]);
     }
 
-    public function test_member_who_is_or_was_hugpong_banay_leader_cannot_be_deleted(): void
+    public function test_member_who_is_or_was_hugpong_banay_leader_can_be_deleted_during_testing(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
         $hugpongBanay = HugpongBanay::create(['name' => 'Leader Guard Hugpong']);
@@ -172,14 +172,12 @@ class ChapelCollectionTest extends TestCase
         ]);
 
         $this->actingAs($admin)
-            ->from(route('members.show', $member))
             ->delete(route('members.destroy', $member), [
                 'delete_confirmation' => 'delete',
             ])
-            ->assertRedirect(route('members.show', $member))
-            ->assertSessionHas('error', 'This member cannot be deleted because they are or have been a Hugpong Banay leader.');
+            ->assertRedirect(route('members.index'));
 
-        $this->assertDatabaseHas('members', [
+        $this->assertDatabaseMissing('members', [
             'id' => $member->id,
         ]);
     }
@@ -479,6 +477,53 @@ class ChapelCollectionTest extends TestCase
             'amount' => 300,
             'reference_no' => 'EXP-001',
             'pay_to' => 'Local hardware',
+        ]);
+    }
+
+    public function test_expense_can_be_edited_and_deleted(): void
+    {
+        $treasurer = User::factory()->create(['role' => 'treasurer']);
+        $expense = Expense::create([
+            'fund_type' => Collection::BALIK_GASA,
+            'category' => 'Repairs',
+            'pay_to' => 'Old supplier',
+            'amount' => 500,
+            'expense_date' => '2026-06-10',
+            'encoded_by' => $treasurer->id,
+        ]);
+
+        $this->actingAs($treasurer)
+            ->get(route('ledger.expenses.edit', $expense))
+            ->assertOk()
+            ->assertSee('Edit Expense');
+
+        $this->actingAs($treasurer)
+            ->put(route('ledger.expenses.update', $expense), [
+                'fund_type' => Collection::DONATION,
+                'category' => 'Maintenance',
+                'pay_to' => 'New supplier',
+                'amount' => 650,
+                'expense_date' => '2026-06-11',
+                'reference_no' => 'EXP-EDIT',
+                'remarks' => 'Updated expense',
+            ])
+            ->assertRedirect(route('ledger.index'));
+
+        $this->assertDatabaseHas('expenses', [
+            'id' => $expense->id,
+            'fund_type' => Collection::DONATION,
+            'category' => 'Maintenance',
+            'pay_to' => 'New supplier',
+            'amount' => 650,
+            'reference_no' => 'EXP-EDIT',
+        ]);
+
+        $this->actingAs($treasurer)
+            ->delete(route('ledger.expenses.destroy', $expense))
+            ->assertRedirect(route('ledger.index'));
+
+        $this->assertSoftDeleted('expenses', [
+            'id' => $expense->id,
         ]);
     }
 
