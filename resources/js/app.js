@@ -54,6 +54,20 @@ document.addEventListener('input', (event) => {
     });
 });
 
+document.addEventListener('click', (event) => {
+    const opener = event.target.closest('[data-modal-open]');
+    const closer = event.target.closest('[data-modal-close]');
+
+    if (opener) {
+        document.getElementById(opener.dataset.modalOpen)?.classList.remove('hidden');
+        return;
+    }
+
+    if (closer) {
+        document.getElementById(closer.dataset.modalClose)?.classList.add('hidden');
+    }
+});
+
 let balikGasaPlotState = null;
 
 async function loadBalikGasaPlot() {

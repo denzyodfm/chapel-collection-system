@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\HugpongBanay;
 use App\Models\HugpongBanayLeaderHistory;
+use App\Models\Member;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -65,6 +66,23 @@ class HugpongBanayController extends Controller
             'members' => $hugpongBanay->members()->orderBy('full_name')->paginate(10),
             'leaderHistories' => $hugpongBanay->leaderHistories()->with('member')->latest('started_at')->get(),
         ]);
+    }
+
+    public function storeMember(Request $request, HugpongBanay $hugpongBanay): RedirectResponse
+    {
+        $data = $request->validate([
+            'full_name' => ['required', 'string', 'max:255'],
+            'contact_number' => ['nullable', 'string', 'max:50', 'regex:/^[0-9+()\\-\\s]+$/'],
+            'address_purok' => ['nullable', 'string', 'max:255'],
+            'status' => ['required', Rule::in(['active', 'inactive'])],
+            'date_joined' => ['nullable', 'date', 'before_or_equal:today'],
+        ]);
+
+        $data['hugpong_banay_id'] = $hugpongBanay->id;
+
+        Member::create($data);
+
+        return redirect()->route('hugpong-banays.show', $hugpongBanay)->with('success', 'Member added to this Hugpong Banay.');
     }
 
     public function edit(HugpongBanay $hugpongBanay): View

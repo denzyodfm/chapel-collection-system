@@ -104,6 +104,35 @@ class ChapelCollectionTest extends TestCase
         ]);
     }
 
+    public function test_member_can_be_added_directly_from_hugpong_banay_page(): void
+    {
+        $treasurer = User::factory()->create(['role' => 'treasurer']);
+        $hugpongBanay = HugpongBanay::create(['name' => 'Popup Member Hugpong']);
+
+        $this->actingAs($treasurer)
+            ->post(route('hugpong-banays.members.store', $hugpongBanay), [
+                'full_name' => 'Popup Added Member',
+                'contact_number' => '0917-555-0202',
+                'address_purok' => 'Block 10 Lot 2',
+                'status' => 'active',
+                'date_joined' => '2026-06-30',
+            ])
+            ->assertRedirect(route('hugpong-banays.show', $hugpongBanay));
+
+        $this->assertDatabaseHas('members', [
+            'member_id' => 'PHFC-0001',
+            'full_name' => 'Popup Added Member',
+            'hugpong_banay_id' => $hugpongBanay->id,
+            'status' => 'active',
+        ]);
+
+        $this->actingAs($treasurer)
+            ->get(route('hugpong-banays.show', $hugpongBanay))
+            ->assertOk()
+            ->assertSee('Popup Added Member')
+            ->assertSee('Add Member to Hugpong Banay');
+    }
+
     public function test_member_can_be_marked_inactive(): void
     {
         $treasurer = User::factory()->create(['role' => 'treasurer']);

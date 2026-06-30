@@ -28,6 +28,9 @@ Route::middleware('auth')->group(function (): void {
         ->name('members.deactivate');
     Route::resource('members', MemberController::class)->middleware('role:admin,treasurer');
     Route::get('/members/{member}/balik-gasa-year', [MemberController::class, 'balikGasaYear'])->name('members.balik-gasa-year');
+    Route::post('/hugpong-banays/{hugpongBanay}/members', [HugpongBanayController::class, 'storeMember'])
+        ->middleware('role:admin,treasurer')
+        ->name('hugpong-banays.members.store');
     Route::resource('hugpong-banays', HugpongBanayController::class)->middleware('role:admin,treasurer');
     Route::resource('collections', CollectionController::class)->except('show')->middleware('role:admin,treasurer');
     Route::get('/ledger', [LedgerController::class, 'index'])->name('ledger.index');
