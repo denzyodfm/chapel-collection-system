@@ -7,8 +7,9 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased">
+    <div class="pointer-events-none fixed inset-y-0 right-0 z-0 hidden w-[min(44vw,620px)] bg-[url('/images/our-lady-of-fatima.jpg')] bg-contain bg-right-bottom bg-no-repeat opacity-[0.08] lg:block"></div>
     @auth
-        <div data-sidebar-shell class="min-h-screen lg:flex">
+        <div data-sidebar-shell class="relative z-10 min-h-screen lg:flex">
             <div data-sidebar-overlay class="fixed inset-0 z-30 hidden bg-slate-950/40 lg:hidden"></div>
             <aside data-sidebar class="fixed inset-y-0 left-0 z-40 w-72 -translate-x-full overflow-y-auto border-r border-slate-200 bg-white transition-transform duration-200">
                 <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
@@ -18,9 +19,6 @@
                     </a>
                     <div class="flex items-center gap-2">
                         <span class="rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700">{{ ucfirst(auth()->user()->role) }}</span>
-                        <button type="button" data-sidebar-toggle class="rounded-lg border border-slate-200 p-2 text-slate-600 hover:bg-slate-50" aria-label="Toggle menu">
-                            <x-icon name="x" class="h-4 w-4" />
-                        </button>
                     </div>
                 </div>
 
@@ -67,9 +65,16 @@
                             <button type="button" data-sidebar-toggle class="mt-1 rounded-lg border border-slate-200 bg-white p-2 text-slate-600 shadow-sm hover:bg-slate-50" aria-label="Toggle menu">
                                 <x-icon name="menu" class="h-5 w-5" />
                             </button>
-                            <div>
-                                <p class="text-sm font-semibold uppercase tracking-wide text-amber-600">@yield('eyebrow', 'Chapel Collection')</p>
-                                <h1 class="text-2xl font-bold text-sky-950 sm:text-3xl">@yield('page-title')</h1>
+                            <div class="min-w-0">
+                                <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+                                    <a href="{{ route('dashboard') }}" class="leading-tight">
+                                        <span class="block text-xs font-semibold uppercase tracking-wide text-amber-600">Princess Homes</span>
+                                        <span class="block text-base font-bold text-sky-900">Fatima Chapel</span>
+                                    </a>
+                                    <span class="hidden h-8 w-px bg-slate-200 sm:block"></span>
+                                    <p class="text-sm font-semibold uppercase tracking-wide text-amber-600">@yield('eyebrow', 'Chapel Collection')</p>
+                                </div>
+                                <h1 class="mt-1 text-2xl font-bold text-sky-950 sm:text-3xl">@yield('page-title')</h1>
                             </div>
                         </div>
                         @yield('page-actions')
