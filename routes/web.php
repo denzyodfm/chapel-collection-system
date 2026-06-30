@@ -23,6 +23,9 @@ Route::middleware('auth')->group(function (): void {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
 
+    Route::patch('/members/{member}/deactivate', [MemberController::class, 'deactivate'])
+        ->middleware('role:admin,treasurer')
+        ->name('members.deactivate');
     Route::resource('members', MemberController::class)->middleware('role:admin,treasurer');
     Route::get('/members/{member}/balik-gasa-year', [MemberController::class, 'balikGasaYear'])->name('members.balik-gasa-year');
     Route::resource('hugpong-banays', HugpongBanayController::class)->middleware('role:admin,treasurer');

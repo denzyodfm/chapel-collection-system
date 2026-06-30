@@ -1,12 +1,21 @@
 @extends('layouts.app')
 @section('page-title', $member->full_name)
 @section('page-actions')
-<div class="flex gap-3">
+<div class="flex flex-wrap gap-3">
     <a href="{{ route('members.edit', $member) }}" class="rounded-lg bg-amber-500 px-5 py-3 text-sm font-semibold text-white hover:bg-amber-600">Edit</a>
-    <form method="POST" action="{{ route('members.destroy', $member) }}" onsubmit="return confirm('Delete this member? This only works when there is no collection history.')">
-        @csrf @method('DELETE')
-        <button class="rounded-lg border border-rose-200 px-5 py-3 text-sm font-semibold text-rose-700 hover:bg-rose-50">Delete</button>
-    </form>
+    @if ($member->status === 'active')
+        <form method="POST" action="{{ route('members.deactivate', $member) }}" onsubmit="return confirm('Mark this member as inactive?')">
+            @csrf @method('PATCH')
+            <button class="rounded-lg border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-100">Set Inactive</button>
+        </form>
+    @endif
+    @if (auth()->user()->role === 'admin')
+        <form method="POST" action="{{ route('members.destroy', $member) }}" class="flex flex-wrap gap-2" onsubmit="return confirm('Delete this member? This only works when there is no collection history.')">
+            @csrf @method('DELETE')
+            <input name="delete_confirmation" placeholder="Type delete" required pattern="delete" class="w-32 rounded-lg border border-rose-200 px-3 py-3 text-sm focus:border-rose-400 focus:outline-none focus:ring-2 focus:ring-rose-100">
+            <button class="rounded-lg border border-rose-200 px-5 py-3 text-sm font-semibold text-rose-700 hover:bg-rose-50">Delete</button>
+        </form>
+    @endif
 </div>
 @endsection
 @section('content')

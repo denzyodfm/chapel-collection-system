@@ -104,6 +104,56 @@ class ChapelCollectionTest extends TestCase
         ]);
     }
 
+    public function test_member_can_be_marked_inactive(): void
+    {
+        $treasurer = User::factory()->create(['role' => 'treasurer']);
+        $member = Member::create([
+            'full_name' => 'Inactive Candidate',
+            'status' => 'active',
+        ]);
+
+        $this->actingAs($treasurer)
+            ->patch(route('members.deactivate', $member))
+            ->assertRedirect(route('members.show', $member));
+
+        $this->assertDatabaseHas('members', [
+            'id' => $member->id,
+            'status' => 'inactive',
+        ]);
+    }
+
+    public function test_only_admin_can_delete_member_with_typed_confirmation(): void
+    {
+        $treasurer = User::factory()->create(['role' => 'treasurer']);
+        $admin = User::factory()->create(['role' => 'admin']);
+        $member = Member::create([
+            'full_name' => 'Delete Candidate',
+            'status' => 'active',
+        ]);
+
+        $this->actingAs($treasurer)
+            ->delete(route('members.destroy', $member), [
+                'delete_confirmation' => 'delete',
+            ])
+            ->assertForbidden();
+
+        $this->actingAs($admin)
+            ->delete(route('members.destroy', $member), [
+                'delete_confirmation' => 'remove',
+            ])
+            ->assertSessionHasErrors('delete_confirmation');
+
+        $this->actingAs($admin)
+            ->delete(route('members.destroy', $member), [
+                'delete_confirmation' => 'delete',
+            ])
+            ->assertRedirect(route('members.index'));
+
+        $this->assertDatabaseMissing('members', [
+            'id' => $member->id,
+        ]);
+    }
+
     public function test_halad_can_be_recorded_without_a_member(): void
     {
         $treasurer = User::factory()->create(['role' => 'treasurer']);

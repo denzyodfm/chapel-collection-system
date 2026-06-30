@@ -89,8 +89,20 @@ class MemberController extends Controller
         return redirect()->route('members.show', $member)->with('success', 'Member updated successfully.');
     }
 
+    public function deactivate(Member $member): RedirectResponse
+    {
+        $member->update(['status' => 'inactive']);
+
+        return redirect()->route('members.show', $member)->with('success', 'Member marked as inactive.');
+    }
+
     public function destroy(Member $member): RedirectResponse
     {
+        abort_unless(request()->user()?->role === 'admin', 403);
+        request()->validate([
+            'delete_confirmation' => ['required', 'in:delete'],
+        ]);
+
         abort_if($member->collections()->exists(), 422, 'Members with collection history cannot be deleted.');
         $member->delete();
 
