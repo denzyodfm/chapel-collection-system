@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\HugpongBanay;
 use App\Models\HugpongBanayLeaderHistory;
-use App\Models\Member;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -36,7 +35,7 @@ class HugpongBanayController extends Controller
     {
         return view('hugpong-banays.create', [
             'hugpongBanay' => new HugpongBanay(['status' => 'active']),
-            'members' => Member::active()->orderBy('full_name')->get(),
+            'members' => collect(),
             'leaderHistory' => null,
         ]);
     }
@@ -74,7 +73,7 @@ class HugpongBanayController extends Controller
 
         return view('hugpong-banays.edit', [
             'hugpongBanay' => $hugpongBanay,
-            'members' => Member::active()->orderBy('full_name')->get(),
+            'members' => $hugpongBanay->members()->active()->orderBy('full_name')->get(),
             'leaderHistory' => $hugpongBanay->activeLeaderHistory,
         ]);
     }
@@ -107,7 +106,12 @@ class HugpongBanayController extends Controller
             'name' => ['required', 'string', 'max:150', Rule::unique('hugpong_banays', 'name')->ignore($hugpongBanay)],
             'description' => ['nullable', 'string', 'max:1000'],
             'status' => ['required', Rule::in(['active', 'inactive'])],
-            'current_leader_id' => ['nullable', 'exists:members,id'],
+            'current_leader_id' => [
+                'nullable',
+                Rule::exists('members', 'id')
+                    ->where('status', 'active')
+                    ->when($hugpongBanay?->exists, fn ($rule) => $rule->where('hugpong_banay_id', $hugpongBanay->id)),
+            ],
             'leader_started_at' => ['nullable', 'date', 'before_or_equal:today'],
         ]);
     }
@@ -130,13 +134,12 @@ class HugpongBanayController extends Controller
 
     private function setLeader(HugpongBanay $hugpongBanay, int $leaderId, string $startedAt, bool $newRecord = false): void
     {
-        $leader = Member::active()->findOrFail($leaderId);
+        $leader = $hugpongBanay->members()->active()->findOrFail($leaderId);
 
         if (! $newRecord) {
             $this->closeActiveLeaderHistory($hugpongBanay, $startedAt);
         }
 
-        $leader->update(['hugpong_banay_id' => $hugpongBanay->id]);
         $hugpongBanay->update(['current_leader_id' => $leader->id]);
 
         HugpongBanayLeaderHistory::create([

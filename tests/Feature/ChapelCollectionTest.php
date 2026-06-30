@@ -684,4 +684,54 @@ class ChapelCollectionTest extends TestCase
             'ended_at' => null,
         ]);
     }
+
+    public function test_hugpong_banay_leader_must_belong_to_that_hugpong_banay(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $hugpongBanay = HugpongBanay::create(['name' => 'Leader Scope Hugpong']);
+        $otherHugpongBanay = HugpongBanay::create(['name' => 'Other Leader Scope Hugpong']);
+        $member = Member::create([
+            'member_id' => 'PHFC-H03',
+            'full_name' => 'Scoped Leader',
+            'hugpong_banay_id' => $hugpongBanay->id,
+            'status' => 'active',
+        ]);
+        $outsider = Member::create([
+            'member_id' => 'PHFC-H04',
+            'full_name' => 'Outsider Leader',
+            'hugpong_banay_id' => $otherHugpongBanay->id,
+            'status' => 'active',
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('hugpong-banays.edit', $hugpongBanay))
+            ->assertOk()
+            ->assertSee('Scoped Leader')
+            ->assertDontSee('Outsider Leader');
+
+        $this->actingAs($admin)
+            ->put(route('hugpong-banays.update', $hugpongBanay), [
+                'name' => 'Leader Scope Hugpong',
+                'status' => 'active',
+                'description' => null,
+                'current_leader_id' => $outsider->id,
+                'leader_started_at' => '2026-06-01',
+            ])
+            ->assertSessionHasErrors('current_leader_id');
+
+        $this->actingAs($admin)
+            ->put(route('hugpong-banays.update', $hugpongBanay), [
+                'name' => 'Leader Scope Hugpong',
+                'status' => 'active',
+                'description' => null,
+                'current_leader_id' => $member->id,
+                'leader_started_at' => '2026-06-01',
+            ])
+            ->assertRedirect(route('hugpong-banays.show', $hugpongBanay));
+
+        $this->assertDatabaseHas('hugpong_banays', [
+            'id' => $hugpongBanay->id,
+            'current_leader_id' => $member->id,
+        ]);
+    }
 }
