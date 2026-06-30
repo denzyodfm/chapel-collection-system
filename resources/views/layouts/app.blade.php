@@ -8,17 +8,23 @@
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased">
     @auth
-        <div class="min-h-screen lg:flex">
-            <aside class="bg-white border-r border-slate-200 lg:fixed lg:inset-y-0 lg:w-72">
+        <div data-sidebar-shell class="min-h-screen lg:flex">
+            <div data-sidebar-overlay class="fixed inset-0 z-30 hidden bg-slate-950/40 lg:hidden"></div>
+            <aside data-sidebar class="fixed inset-y-0 left-0 z-40 w-72 -translate-x-full overflow-y-auto border-r border-slate-200 bg-white transition-transform duration-200">
                 <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
                     <a href="{{ route('dashboard') }}" class="leading-tight">
                         <span class="block text-sm font-semibold uppercase tracking-wide text-amber-600">Princess Homes</span>
                         <span class="block text-lg font-bold text-sky-900">Fatima Chapel</span>
                     </a>
-                    <span class="rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700">{{ ucfirst(auth()->user()->role) }}</span>
+                    <div class="flex items-center gap-2">
+                        <span class="rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700">{{ ucfirst(auth()->user()->role) }}</span>
+                        <button type="button" data-sidebar-toggle class="rounded-lg border border-slate-200 p-2 text-slate-600 hover:bg-slate-50" aria-label="Toggle menu">
+                            <x-icon name="x" class="h-4 w-4" />
+                        </button>
+                    </div>
                 </div>
 
-                <nav class="grid gap-1 px-4 py-5 text-sm font-medium sm:grid-cols-2 lg:grid-cols-1">
+                <nav class="grid gap-1 px-4 py-5 text-sm font-medium">
                     @php
                         $nav = [
                             ['Dashboard', 'dashboard', 'dashboard', 'dashboard'],
@@ -54,12 +60,17 @@
                 </div>
             </aside>
 
-            <main class="min-h-screen flex-1 lg:pl-72">
+            <main data-main-content class="min-h-screen flex-1 transition-all duration-200 lg:pl-72">
                 <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
                     <header class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-                        <div>
-                            <p class="text-sm font-semibold uppercase tracking-wide text-amber-600">@yield('eyebrow', 'Chapel Collection')</p>
-                            <h1 class="text-2xl font-bold text-sky-950 sm:text-3xl">@yield('page-title')</h1>
+                        <div class="flex items-start gap-3">
+                            <button type="button" data-sidebar-toggle class="mt-1 rounded-lg border border-slate-200 bg-white p-2 text-slate-600 shadow-sm hover:bg-slate-50" aria-label="Toggle menu">
+                                <x-icon name="menu" class="h-5 w-5" />
+                            </button>
+                            <div>
+                                <p class="text-sm font-semibold uppercase tracking-wide text-amber-600">@yield('eyebrow', 'Chapel Collection')</p>
+                                <h1 class="text-2xl font-bold text-sky-950 sm:text-3xl">@yield('page-title')</h1>
+                            </div>
                         </div>
                         @yield('page-actions')
                     </header>

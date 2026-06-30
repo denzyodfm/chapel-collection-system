@@ -41,6 +41,12 @@
         @case('trash')
             <path stroke-linecap="round" stroke-linejoin="round" d="M4 7h16M9 7V5h6v2m-8 0 1 14h8l1-14M10 11v6m4-6v6" />
             @break
+        @case('menu')
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+            @break
+        @case('x')
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6 6 18" />
+            @break
         @default
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14M5 12h14" />
     @endswitch

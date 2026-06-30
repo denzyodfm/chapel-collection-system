@@ -68,6 +68,55 @@ document.addEventListener('click', (event) => {
     }
 });
 
+const sidebar = document.querySelector('[data-sidebar]');
+const sidebarOverlay = document.querySelector('[data-sidebar-overlay]');
+const mainContent = document.querySelector('[data-main-content]');
+
+function setSidebarOpen(isOpen) {
+    if (!sidebar || !mainContent || !sidebarOverlay) {
+        return;
+    }
+
+    sidebar.classList.toggle('-translate-x-full', !isOpen);
+    sidebar.classList.toggle('translate-x-0', isOpen);
+    sidebarOverlay.classList.toggle('hidden', !isOpen);
+    mainContent.classList.toggle('lg:pl-72', isOpen);
+    mainContent.classList.toggle('lg:pl-0', !isOpen);
+
+    if (window.matchMedia('(min-width: 1024px)').matches) {
+        localStorage.setItem('chapelSidebarOpen', isOpen ? '1' : '0');
+    }
+}
+
+if (sidebar && mainContent && sidebarOverlay) {
+    const storedSidebarState = localStorage.getItem('chapelSidebarOpen');
+
+    if (window.matchMedia('(min-width: 1024px)').matches) {
+        setSidebarOpen(storedSidebarState !== '0');
+    } else {
+        setSidebarOpen(false);
+    }
+
+    document.addEventListener('click', (event) => {
+        if (event.target.closest('[data-sidebar-toggle]')) {
+            setSidebarOpen(sidebar.classList.contains('-translate-x-full'));
+            return;
+        }
+
+        if (event.target.closest('[data-sidebar-overlay]')) {
+            setSidebarOpen(false);
+        }
+    });
+
+    window.addEventListener('resize', () => {
+        if (window.matchMedia('(min-width: 1024px)').matches) {
+            setSidebarOpen(localStorage.getItem('chapelSidebarOpen') !== '0');
+        } else {
+            setSidebarOpen(false);
+        }
+    });
+}
+
 let balikGasaPlotState = null;
 
 async function loadBalikGasaPlot() {
