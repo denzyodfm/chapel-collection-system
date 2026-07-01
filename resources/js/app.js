@@ -71,6 +71,7 @@ document.addEventListener('click', (event) => {
 const sidebar = document.querySelector('[data-sidebar]');
 const sidebarOverlay = document.querySelector('[data-sidebar-overlay]');
 const mainContent = document.querySelector('[data-main-content]');
+const headerBrand = document.querySelector('[data-header-brand]');
 
 function setSidebarOpen(isOpen) {
     if (!sidebar || !mainContent || !sidebarOverlay) {
@@ -82,6 +83,8 @@ function setSidebarOpen(isOpen) {
     sidebarOverlay.classList.toggle('hidden', !isOpen);
     mainContent.classList.toggle('lg:pl-72', isOpen);
     mainContent.classList.toggle('lg:pl-0', !isOpen);
+    headerBrand?.classList.toggle('hidden', isOpen);
+    headerBrand?.classList.toggle('flex', !isOpen);
 
     if (window.matchMedia('(min-width: 1024px)').matches) {
         localStorage.setItem('chapelSidebarOpen', isOpen ? '1' : '0');

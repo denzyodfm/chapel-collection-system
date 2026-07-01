@@ -7,7 +7,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased">
-    <div class="pointer-events-none fixed inset-y-0 right-0 z-0 hidden w-[min(44vw,620px)] bg-[url('/images/our-lady-of-fatima.jpg')] bg-contain bg-right-bottom bg-no-repeat opacity-[0.08] lg:block"></div>
+    <img src="{{ asset('images/fatima-image.png') }}" alt="" aria-hidden="true" class="pointer-events-none fixed right-3 top-3 z-0 hidden h-40 w-auto opacity-[0.08] sm:block lg:right-8 lg:top-6 lg:h-56">
     @auth
         <div data-sidebar-shell class="relative z-10 min-h-screen lg:flex">
             <div data-sidebar-overlay class="fixed inset-0 z-30 hidden bg-slate-950/40 lg:hidden"></div>
@@ -67,11 +67,13 @@
                             </button>
                             <div class="min-w-0">
                                 <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
-                                    <a href="{{ route('dashboard') }}" class="leading-tight">
-                                        <span class="block text-xs font-semibold uppercase tracking-wide text-amber-600">Princess Homes</span>
-                                        <span class="block text-base font-bold text-sky-900">Fatima Chapel</span>
-                                    </a>
-                                    <span class="hidden h-8 w-px bg-slate-200 sm:block"></span>
+                                    <div data-header-brand class="hidden items-center gap-3">
+                                        <a href="{{ route('dashboard') }}" class="leading-tight">
+                                            <span class="block text-xs font-semibold uppercase tracking-wide text-amber-600">Princess Homes</span>
+                                            <span class="block text-base font-bold text-sky-900">Fatima Chapel</span>
+                                        </a>
+                                        <span class="hidden h-8 w-px bg-slate-200 sm:block"></span>
+                                    </div>
                                     <p class="text-sm font-semibold uppercase tracking-wide text-amber-600">@yield('eyebrow', 'Chapel Collection')</p>
                                 </div>
                                 <h1 class="mt-1 text-2xl font-bold text-sky-950 sm:text-3xl">@yield('page-title')</h1>
