@@ -83,8 +83,13 @@ function setSidebarOpen(isOpen) {
     sidebarOverlay.classList.toggle('hidden', !isOpen);
     mainContent.classList.toggle('lg:pl-72', isOpen);
     mainContent.classList.toggle('lg:pl-0', !isOpen);
-    headerBrand?.classList.toggle('hidden', isOpen);
-    headerBrand?.classList.toggle('flex', !isOpen);
+
+    if (headerBrand) {
+        headerBrand.hidden = isOpen;
+        headerBrand.classList.toggle('hidden', isOpen);
+        headerBrand.classList.toggle('flex', !isOpen);
+        headerBrand.setAttribute('aria-hidden', isOpen ? 'true' : 'false');
+    }
 
     if (window.matchMedia('(min-width: 1024px)').matches) {
         localStorage.setItem('chapelSidebarOpen', isOpen ? '1' : '0');

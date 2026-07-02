@@ -7,7 +7,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased">
-    <img src="{{ asset('images/fatima-image.png') }}" alt="" aria-hidden="true" class="pointer-events-none fixed right-3 top-3 z-0 hidden h-40 w-auto opacity-[0.08] sm:block lg:right-8 lg:top-6 lg:h-56">
+    <img src="{{ asset('images/fatima-image.png') }}" alt="" aria-hidden="true" class="pointer-events-none fixed right-3 top-3 z-20 hidden h-44 w-auto opacity-10 sm:block lg:right-8 lg:top-6 lg:h-64">
     @auth
         <div data-sidebar-shell class="relative z-10 min-h-screen lg:flex">
             <div data-sidebar-overlay class="fixed inset-0 z-30 hidden bg-slate-950/40 lg:hidden"></div>
@@ -67,7 +67,7 @@
                             </button>
                             <div class="min-w-0">
                                 <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
-                                    <div data-header-brand class="hidden items-center gap-3">
+                                    <div data-header-brand class="hidden items-center gap-3" hidden>
                                         <a href="{{ route('dashboard') }}" class="leading-tight">
                                             <span class="block text-xs font-semibold uppercase tracking-wide text-amber-600">Princess Homes</span>
                                             <span class="block text-base font-bold text-sky-900">Fatima Chapel</span>
