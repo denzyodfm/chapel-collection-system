@@ -62,6 +62,8 @@ class LedgerController extends Controller
             ->when($dateTo, fn ($query, $date) => $query->whereDate('entry_date', '<=', $date))
             ->get()
             ->map(fn (LedgerEntry $entry) => [
+                'id' => $entry->id,
+                'row_type' => 'manual',
                 'date' => $entry->entry_date,
                 'fund_type' => $entry->fund_type,
                 'source' => $entry->entry_type === LedgerEntry::CREDIT ? 'Manual Credit' : 'Manual Debit',
@@ -79,6 +81,7 @@ class LedgerController extends Controller
             ->get()
             ->map(fn (Expense $expense) => [
                 'id' => $expense->id,
+                'row_type' => 'expense',
                 'date' => $expense->expense_date,
                 'fund_type' => $expense->fund_type,
                 'source' => 'Expense',
@@ -142,6 +145,19 @@ class LedgerController extends Controller
         LedgerEntry::create($data);
 
         return redirect()->route('ledger.index')->with('success', 'Ledger entry posted.');
+    }
+
+    public function destroyEntry(Request $request, LedgerEntry $entry): RedirectResponse
+    {
+        $request->validate([
+            'delete_confirmation' => ['required', 'string', 'in:DELETE'],
+        ], [
+            'delete_confirmation.in' => 'Type DELETE to confirm deleting this ledger entry.',
+        ]);
+
+        $entry->delete();
+
+        return redirect()->route('ledger.index')->with('success', 'Ledger entry deleted.');
     }
 
     public function storeExpense(Request $request): RedirectResponse

@@ -106,7 +106,13 @@
                         <td class="px-4 py-3 text-right font-semibold text-emerald-700">{{ $row['credit'] > 0 ? 'PHP '.number_format($row['credit'], 2) : '-' }}</td>
                         <td class="px-4 py-3 text-right font-semibold text-rose-700">{{ $row['debit'] > 0 ? 'PHP '.number_format($row['debit'], 2) : '-' }}</td>
                         <td class="px-4 py-3 text-right">
-                            @if ($row['source'] === 'Expense' && auth()->user()->hasAnyRole(['admin', 'treasurer']))
+                            @if (($row['row_type'] ?? null) === 'manual' && auth()->user()->hasAnyRole(['admin', 'treasurer']))
+                                <form class="inline" method="POST" action="{{ route('ledger.entries.destroy', $row['id']) }}" onsubmit="const typed = prompt('Type DELETE to delete this ledger entry.'); if (typed !== 'DELETE') { return false; } this.delete_confirmation.value = typed; return true;">
+                                    @csrf @method('DELETE')
+                                    <input type="hidden" name="delete_confirmation">
+                                    <button class="inline-flex items-center gap-1 font-semibold text-rose-700"><x-icon name="trash" class="h-3.5 w-3.5" /> Delete</button>
+                                </form>
+                            @elseif (($row['row_type'] ?? null) === 'expense' && auth()->user()->hasAnyRole(['admin', 'treasurer']))
                                 <a href="{{ route('ledger.expenses.edit', $row['id']) }}" class="inline-flex items-center gap-1 font-semibold text-amber-700"><x-icon name="edit" class="h-3.5 w-3.5" /> Edit</a>
                                 <form class="inline" method="POST" action="{{ route('ledger.expenses.destroy', $row['id']) }}" onsubmit="return confirm('Delete this expense?')">
                                     @csrf @method('DELETE')

@@ -6,6 +6,7 @@ use App\Models\Collection;
 use App\Models\Expense;
 use App\Models\HugpongBanay;
 use App\Models\HugpongBanayLeaderHistory;
+use App\Models\LedgerEntry;
 use App\Models\Member;
 use App\Models\User;
 use Illuminate\Database\QueryException;
@@ -553,6 +554,40 @@ class ChapelCollectionTest extends TestCase
 
         $this->assertSoftDeleted('expenses', [
             'id' => $expense->id,
+        ]);
+    }
+
+    public function test_manual_ledger_entry_requires_delete_confirmation(): void
+    {
+        $treasurer = User::factory()->create(['role' => 'treasurer']);
+        $entry = LedgerEntry::create([
+            'fund_type' => Collection::BALIK_GASA,
+            'entry_type' => LedgerEntry::CREDIT,
+            'amount' => 11000,
+            'entry_date' => '2026-06-28',
+            'remarks' => 'from ate Cora',
+            'encoded_by' => $treasurer->id,
+        ]);
+
+        $this->actingAs($treasurer)
+            ->delete(route('ledger.entries.destroy', $entry), [
+                'delete_confirmation' => 'delete',
+            ])
+            ->assertSessionHasErrors('delete_confirmation');
+
+        $this->assertDatabaseHas('ledger_entries', [
+            'id' => $entry->id,
+            'deleted_at' => null,
+        ]);
+
+        $this->actingAs($treasurer)
+            ->delete(route('ledger.entries.destroy', $entry), [
+                'delete_confirmation' => 'DELETE',
+            ])
+            ->assertRedirect(route('ledger.index'));
+
+        $this->assertSoftDeleted('ledger_entries', [
+            'id' => $entry->id,
         ]);
     }
 

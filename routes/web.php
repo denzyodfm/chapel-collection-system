@@ -35,6 +35,7 @@ Route::middleware('auth')->group(function (): void {
     Route::resource('collections', CollectionController::class)->except('show')->middleware('role:admin,treasurer');
     Route::get('/ledger', [LedgerController::class, 'index'])->name('ledger.index');
     Route::post('/ledger/entries', [LedgerController::class, 'storeEntry'])->middleware('role:admin,treasurer')->name('ledger.entries.store');
+    Route::delete('/ledger/entries/{entry}', [LedgerController::class, 'destroyEntry'])->middleware('role:admin,treasurer')->name('ledger.entries.destroy');
     Route::post('/ledger/expenses', [LedgerController::class, 'storeExpense'])->middleware('role:admin,treasurer')->name('ledger.expenses.store');
     Route::get('/ledger/expenses/{expense}/edit', [LedgerController::class, 'editExpense'])->middleware('role:admin,treasurer')->name('ledger.expenses.edit');
     Route::put('/ledger/expenses/{expense}', [LedgerController::class, 'updateExpense'])->middleware('role:admin,treasurer')->name('ledger.expenses.update');
