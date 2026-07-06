@@ -4,6 +4,7 @@
 @section('page-actions')
 <div class="flex flex-wrap gap-3 print:hidden">
     <a href="{{ route('reports.print', ['month' => $month]) }}" target="_blank" class="rounded-lg bg-sky-800 px-5 py-3 text-sm font-semibold text-white hover:bg-sky-900">Printable Monthly Report</a>
+    <a href="{{ route('reports.balik-gasa-subsummary.print', ['month' => $month]) }}" target="_blank" class="rounded-lg bg-emerald-700 px-5 py-3 text-sm font-semibold text-white hover:bg-emerald-800">Print BG Subsummary</a>
     <a href="{{ route('reports.csv', ['month' => $month]) }}" class="rounded-lg bg-amber-500 px-5 py-3 text-sm font-semibold text-white hover:bg-amber-600">Export CSV</a>
 </div>
 @endsection
@@ -41,6 +42,72 @@
         <p class="text-sm font-semibold text-amber-800">Monthly Grand Total</p>
         <p class="mt-2 text-2xl font-bold text-amber-950">PHP {{ number_format($grand, 2) }}</p>
     </article>
+</section>
+
+<section class="mt-6 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+        <div>
+            <h2 class="text-lg font-bold text-sky-950">Balik Gasa Subsummary by Hugpong Banay</h2>
+            <p class="text-sm text-slate-500">{{ \Carbon\Carbon::createFromFormat('Y-m', $month)->format('F Y') }} only. Donation and Offering are not included.</p>
+        </div>
+        <a href="{{ route('reports.balik-gasa-subsummary.print', ['month' => $month]) }}" target="_blank" class="rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 print:hidden">Print Subsummary</a>
+    </div>
+
+    <div class="mt-4 space-y-4">
+        @forelse ($balikGasaSubsummary['groups'] as $group)
+            <div class="overflow-hidden rounded-lg border border-slate-200">
+                <div class="flex flex-wrap items-center justify-between gap-3 bg-sky-50 px-4 py-3">
+                    <div>
+                        <h3 class="font-bold text-sky-950">{{ $group['name'] }}</h3>
+                        <p class="text-xs font-medium text-slate-500">{{ $group['members_paid'] }} paid members</p>
+                    </div>
+                    <div class="text-right text-sm">
+                        <p class="font-bold text-sky-950">Subtotal PHP {{ number_format((float) $group['total'], 2) }}</p>
+                        <p class="text-xs text-slate-600">ICP PHP {{ number_format((float) $group['icp_share'], 2) }} / Chapel PHP {{ number_format((float) $group['chapel_share'], 2) }}</p>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-left text-sm">
+                        <thead class="bg-slate-50 text-xs uppercase text-slate-500">
+                            <tr><th class="px-3 py-3">Date</th><th class="px-3 py-3">Member ID</th><th class="px-3 py-3">Member</th><th class="px-3 py-3">Remarks</th><th class="px-3 py-3 text-right">Amount</th></tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            @foreach ($group['entries'] as $collection)
+                                <tr>
+                                    <td class="px-3 py-3">{{ $collection->collection_date->format('M d, Y') }}</td>
+                                    <td class="px-3 py-3">{{ $collection->member?->member_id ?: '-' }}</td>
+                                    <td class="px-3 py-3 font-medium">{{ $collection->member?->full_name ?: 'Unknown member' }}</td>
+                                    <td class="px-3 py-3">{{ $collection->remarks ?: '-' }}</td>
+                                    <td class="px-3 py-3 text-right font-semibold">PHP {{ number_format((float) $collection->amount, 2) }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        @empty
+            <div class="rounded-lg border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500">No Balik Gasa payments for this month.</div>
+        @endforelse
+    </div>
+
+    <div class="mt-4 grid gap-3 rounded-lg bg-slate-50 p-4 text-sm sm:grid-cols-4">
+        <div>
+            <p class="text-xs font-semibold uppercase text-slate-500">Paid Members</p>
+            <p class="mt-1 text-lg font-bold text-sky-950">{{ $balikGasaSubsummary['grand']['members_paid'] }}</p>
+        </div>
+        <div>
+            <p class="text-xs font-semibold uppercase text-slate-500">Grand Total</p>
+            <p class="mt-1 text-lg font-bold text-sky-950">PHP {{ number_format((float) $balikGasaSubsummary['grand']['total'], 2) }}</p>
+        </div>
+        <div>
+            <p class="text-xs font-semibold uppercase text-slate-500">ICP 60%</p>
+            <p class="mt-1 text-lg font-bold text-sky-950">PHP {{ number_format((float) $balikGasaSubsummary['grand']['icp_share'], 2) }}</p>
+        </div>
+        <div>
+            <p class="text-xs font-semibold uppercase text-slate-500">Chapel 40%</p>
+            <p class="mt-1 text-lg font-bold text-amber-800">PHP {{ number_format((float) $balikGasaSubsummary['grand']['chapel_share'], 2) }}</p>
+        </div>
+    </div>
 </section>
 
 <section class="mt-6 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">

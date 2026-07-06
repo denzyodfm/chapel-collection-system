@@ -32,6 +32,7 @@ class ReportController extends Controller
             ->groupBy('collection_type')
             ->pluck('total', 'collection_type');
         $balikGasaShares = $this->balikGasaSharesByHugpongBanay($month);
+        $balikGasaSubsummary = $this->balikGasaSubsummaryByHugpongBanay($month);
 
         $memberHistory = collect();
         if ($memberId) {
@@ -47,9 +48,25 @@ class ReportController extends Controller
             'monthly' => $monthly,
             'summary' => $summary,
             'balikGasaShares' => $balikGasaShares,
+            'balikGasaSubsummary' => $balikGasaSubsummary,
             'memberHistory' => $memberHistory,
             'selectedMember' => $memberId ? Member::find($memberId) : null,
             'types' => Collection::TYPES,
+        ]);
+    }
+
+    public function printBalikGasaSubsummary(Request $request): View
+    {
+        $validated = $request->validate([
+            'month' => ['nullable', 'date_format:Y-m'],
+        ]);
+
+        $month = $validated['month'] ?? now()->format('Y-m');
+
+        return view('reports.balik-gasa-subsummary-print', [
+            'month' => $month,
+            'monthLabel' => Carbon::createFromFormat('Y-m', $month)->format('F Y'),
+            'balikGasaSubsummary' => $this->balikGasaSubsummaryByHugpongBanay($month),
         ]);
     }
 
@@ -164,6 +181,45 @@ class ReportController extends Controller
             'rows' => $rows,
             'grand' => [
                 'members_paid' => (int) $rows->sum('members_paid'),
+                'total' => $grandTotal,
+                'icp_share' => $grandTotal * 0.60,
+                'chapel_share' => $grandTotal * 0.40,
+            ],
+        ];
+    }
+
+    private function balikGasaSubsummaryByHugpongBanay(string $month): array
+    {
+        $groups = Collection::with('member.hugpongBanay')
+            ->includedInTotals()
+            ->where('collection_type', Collection::BALIK_GASA)
+            ->where('collection_month', $month)
+            ->get()
+            ->groupBy(fn (Collection $collection) => $collection->member?->hugpongBanay?->name ?: 'No Hugpong Banay')
+            ->map(function ($collections, $name) {
+                $entries = $collections
+                    ->sortBy(fn (Collection $collection) => $collection->member?->full_name ?? '')
+                    ->values();
+                $total = (float) $entries->sum('amount');
+
+                return [
+                    'name' => $name,
+                    'entries' => $entries,
+                    'members_paid' => $entries->pluck('member_id')->filter()->unique()->count(),
+                    'total' => $total,
+                    'icp_share' => $total * 0.60,
+                    'chapel_share' => $total * 0.40,
+                ];
+            })
+            ->sortBy('name')
+            ->values();
+
+        $grandTotal = (float) $groups->sum('total');
+
+        return [
+            'groups' => $groups,
+            'grand' => [
+                'members_paid' => (int) $groups->sum('members_paid'),
                 'total' => $grandTotal,
                 'icp_share' => $grandTotal * 0.60,
                 'chapel_share' => $grandTotal * 0.40,

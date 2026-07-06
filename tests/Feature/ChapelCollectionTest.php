@@ -853,11 +853,19 @@ class ChapelCollectionTest extends TestCase
             'collection_month' => '2026-06',
             'encoded_by' => $treasurer->id,
         ]);
+        Collection::create([
+            'member_id' => $memberOne->id,
+            'collection_type' => Collection::DONATION,
+            'amount' => 999,
+            'collection_date' => '2026-06-07',
+            'encoded_by' => $treasurer->id,
+        ]);
 
         $this->actingAs($viewer)
             ->get(route('reports.index', ['month' => '2026-06']))
             ->assertOk()
             ->assertSee('Balik Gasa ICP / Chapel Share by Hugpong Banay')
+            ->assertSee('Balik Gasa Subsummary by Hugpong Banay')
             ->assertSee('San Isidro')
             ->assertSee('Our Lady of Fatima')
             ->assertSee('PHP 300.00')
@@ -870,6 +878,15 @@ class ChapelCollectionTest extends TestCase
             ->assertSee('Balik Gasa ICP / Chapel Share by Hugpong Banay')
             ->assertSee('PHP 180.00')
             ->assertSee('PHP 120.00');
+
+        $this->actingAs($viewer)
+            ->get(route('reports.balik-gasa-subsummary.print', ['month' => '2026-06']))
+            ->assertOk()
+            ->assertSee('Balik Gasa Subsummary by Hugpong Banay')
+            ->assertSee('Report Member One')
+            ->assertSee('Report Member Two')
+            ->assertSee('PHP 300.00')
+            ->assertDontSee('PHP 999.00');
     }
 
     public function test_hugpong_banay_leader_change_keeps_tenure_history(): void

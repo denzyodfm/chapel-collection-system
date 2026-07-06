@@ -59,6 +59,7 @@ Route::middleware('auth')->group(function (): void {
 
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
     Route::get('/reports/monthly/print', [ReportController::class, 'print'])->name('reports.print');
+    Route::get('/reports/balik-gasa-subsummary/print', [ReportController::class, 'printBalikGasaSubsummary'])->name('reports.balik-gasa-subsummary.print');
     Route::get('/reports/csv', [ReportController::class, 'csv'])->name('reports.csv');
 
     Route::resource('users', UserController::class)->except('show')->middleware('role:admin');
