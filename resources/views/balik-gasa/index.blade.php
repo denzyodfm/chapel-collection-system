@@ -47,7 +47,11 @@
             <h2 class="text-lg font-bold text-sky-950">{{ $selectedHugpongBanay?->name ?: 'All Hugpong Banay' }}</h2>
             <p class="text-sm text-slate-600">{{ $monthLabel }}</p>
         </div>
-        <p class="text-sm font-semibold text-slate-600">{{ $payments->count() }} paid / {{ $members->count() }} active members</p>
+        <div class="grid gap-1 text-right text-sm">
+            <p class="font-semibold text-slate-600">{{ $payments->count() }} paid / {{ $members->count() }} active members</p>
+            <p class="font-bold text-sky-950">Balik Gasa PHP {{ number_format((float) $balikGasaTotal, 2) }}</p>
+            <p class="text-xs font-semibold text-slate-600">ICP 60% PHP {{ number_format((float) $balikGasaIcpShare, 2) }} / Chapel 40% PHP {{ number_format((float) $balikGasaChapelShare, 2) }}</p>
+        </div>
     </div>
     <div class="overflow-x-auto">
         <table id="balik-gasa-table" class="min-w-full text-left text-sm">
