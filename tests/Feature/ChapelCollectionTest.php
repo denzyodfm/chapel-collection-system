@@ -134,6 +134,40 @@ class ChapelCollectionTest extends TestCase
             ->assertSee('Add Member to Hugpong Banay');
     }
 
+    public function test_hugpong_banay_index_includes_details_modal_with_members(): void
+    {
+        $treasurer = User::factory()->create(['role' => 'treasurer']);
+        $hugpongBanay = HugpongBanay::create([
+            'name' => 'Modal Hugpong',
+            'description' => 'Families near the chapel gate.',
+        ]);
+        $leader = Member::create([
+            'full_name' => 'Modal Leader',
+            'status' => 'active',
+            'hugpong_banay_id' => $hugpongBanay->id,
+        ]);
+        $member = Member::create([
+            'full_name' => 'Modal Member',
+            'contact_number' => '0917-555-0303',
+            'status' => 'active',
+            'hugpong_banay_id' => $hugpongBanay->id,
+        ]);
+        $hugpongBanay->update(['current_leader_id' => $leader->id]);
+
+        $this->actingAs($treasurer)
+            ->get(route('hugpong-banays.index'))
+            ->assertOk()
+            ->assertSee('data-modal-open="hugpong-banay-'.$hugpongBanay->id.'-modal"', false)
+            ->assertSee('Hugpong Banay Details')
+            ->assertSee('Families near the chapel gate.')
+            ->assertSee('Members Portal')
+            ->assertSee($leader->member_id)
+            ->assertSee('Modal Leader')
+            ->assertSee($member->member_id)
+            ->assertSee('Modal Member')
+            ->assertSee('0917-555-0303');
+    }
+
     public function test_member_can_be_marked_inactive(): void
     {
         $treasurer = User::factory()->create(['role' => 'treasurer']);

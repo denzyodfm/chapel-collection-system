@@ -21,7 +21,10 @@ class HugpongBanayController extends Controller
             'status' => ['nullable', Rule::in(['active', 'inactive'])],
         ]);
 
-        $hugpongBanays = HugpongBanay::with(['currentLeader'])
+        $hugpongBanays = HugpongBanay::with([
+            'currentLeader',
+            'members' => fn ($query) => $query->orderBy('full_name'),
+        ])
             ->withCount(['members', 'members as active_members_count' => fn ($query) => $query->where('status', 'active')])
             ->when($filters['search'] ?? null, fn ($query, $search) => $query->where('name', 'like', "%{$search}%"))
             ->when($filters['status'] ?? null, fn ($query, $status) => $query->where('status', $status))
