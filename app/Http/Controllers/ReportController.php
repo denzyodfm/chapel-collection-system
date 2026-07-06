@@ -31,6 +31,7 @@ class ReportController extends Controller
             ->selectRaw('collection_type, SUM(amount) as total')
             ->groupBy('collection_type')
             ->pluck('total', 'collection_type');
+        $balikGasaShares = $this->balikGasaSharesByHugpongBanay($month);
 
         $memberHistory = collect();
         if ($memberId) {
@@ -45,6 +46,7 @@ class ReportController extends Controller
             'members' => Member::orderBy('full_name')->get(),
             'monthly' => $monthly,
             'summary' => $summary,
+            'balikGasaShares' => $balikGasaShares,
             'memberHistory' => $memberHistory,
             'selectedMember' => $memberId ? Member::find($memberId) : null,
             'types' => Collection::TYPES,
@@ -71,10 +73,12 @@ class ReportController extends Controller
         $summary = $collections
             ->groupBy('collection_type')
             ->map(fn ($rows) => $rows->sum('amount'));
+        $balikGasaShares = $this->balikGasaSharesByHugpongBanay($month);
 
         return view('reports.print', [
             'collections' => $collections,
             'summary' => $summary,
+            'balikGasaShares' => $balikGasaShares,
             'month' => $month,
             'monthLabel' => Carbon::createFromFormat('Y-m', $month)->format('F Y'),
             'types' => Collection::TYPES,
@@ -134,5 +138,36 @@ class ReportController extends Controller
                         ->whereBetween('collection_date', [$start, $end]);
                 });
             });
+    }
+
+    private function balikGasaSharesByHugpongBanay(string $month): array
+    {
+        $rows = Collection::with('member.hugpongBanay')
+            ->includedInTotals()
+            ->where('collection_type', Collection::BALIK_GASA)
+            ->where('collection_month', $month)
+            ->get()
+            ->groupBy(fn (Collection $collection) => $collection->member?->hugpongBanay?->name ?: 'No Hugpong Banay')
+            ->map(fn ($collections, $name) => [
+                'name' => $name,
+                'members_paid' => $collections->pluck('member_id')->filter()->unique()->count(),
+                'total' => (float) $collections->sum('amount'),
+                'icp_share' => (float) $collections->sum('amount') * 0.60,
+                'chapel_share' => (float) $collections->sum('amount') * 0.40,
+            ])
+            ->sortBy('name')
+            ->values();
+
+        $grandTotal = (float) $rows->sum('total');
+
+        return [
+            'rows' => $rows,
+            'grand' => [
+                'members_paid' => (int) $rows->sum('members_paid'),
+                'total' => $grandTotal,
+                'icp_share' => $grandTotal * 0.60,
+                'chapel_share' => $grandTotal * 0.40,
+            ],
+        ];
     }
 }

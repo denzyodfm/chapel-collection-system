@@ -812,6 +812,58 @@ class ChapelCollectionTest extends TestCase
             ->assertSee('Princess Homes Fatima Chapel');
     }
 
+    public function test_monthly_report_shows_balik_gasa_share_by_hugpong_banay(): void
+    {
+        $viewer = User::factory()->create(['role' => 'viewer']);
+        $treasurer = User::factory()->create(['role' => 'treasurer']);
+        $sanIsidro = HugpongBanay::create(['name' => 'San Isidro']);
+        $fatima = HugpongBanay::create(['name' => 'Our Lady of Fatima']);
+        $memberOne = Member::create([
+            'full_name' => 'Report Member One',
+            'status' => 'active',
+            'hugpong_banay_id' => $sanIsidro->id,
+        ]);
+        $memberTwo = Member::create([
+            'full_name' => 'Report Member Two',
+            'status' => 'active',
+            'hugpong_banay_id' => $fatima->id,
+        ]);
+
+        Collection::create([
+            'member_id' => $memberOne->id,
+            'collection_type' => Collection::BALIK_GASA,
+            'amount' => 100,
+            'collection_date' => '2026-06-05',
+            'collection_month' => '2026-06',
+            'encoded_by' => $treasurer->id,
+        ]);
+        Collection::create([
+            'member_id' => $memberTwo->id,
+            'collection_type' => Collection::BALIK_GASA,
+            'amount' => 200,
+            'collection_date' => '2026-06-06',
+            'collection_month' => '2026-06',
+            'encoded_by' => $treasurer->id,
+        ]);
+
+        $this->actingAs($viewer)
+            ->get(route('reports.index', ['month' => '2026-06']))
+            ->assertOk()
+            ->assertSee('Balik Gasa ICP / Chapel Share by Hugpong Banay')
+            ->assertSee('San Isidro')
+            ->assertSee('Our Lady of Fatima')
+            ->assertSee('PHP 300.00')
+            ->assertSee('PHP 180.00')
+            ->assertSee('PHP 120.00');
+
+        $this->actingAs($viewer)
+            ->get(route('reports.print', ['month' => '2026-06']))
+            ->assertOk()
+            ->assertSee('Balik Gasa ICP / Chapel Share by Hugpong Banay')
+            ->assertSee('PHP 180.00')
+            ->assertSee('PHP 120.00');
+    }
+
     public function test_hugpong_banay_leader_change_keeps_tenure_history(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);

@@ -14,6 +14,10 @@
         <input type="search" data-table-filter-target="balik-gasa-table" placeholder="Type a member name" class="rounded-lg border border-slate-300 px-4 py-3">
     </label>
     <button class="inline-flex items-center justify-center gap-2 rounded-lg bg-sky-800 px-5 py-3 text-sm font-semibold text-white"><x-icon name="filter" class="h-4 w-4" /> View Month</button>
+    <div class="grid gap-1 rounded-lg bg-sky-50 px-4 py-3 text-sm sm:min-w-80">
+        <p class="font-semibold text-sky-950">Balik Gasa: PHP {{ number_format((float) $balikGasaTotal, 2) }}</p>
+        <p class="text-xs font-medium text-slate-600">ICP 60%: PHP {{ number_format((float) $balikGasaIcpShare, 2) }} / Chapel 40%: PHP {{ number_format((float) $balikGasaChapelShare, 2) }}</p>
+    </div>
 </form>
 
 <section class="mb-5 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">

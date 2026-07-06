@@ -34,10 +34,16 @@ class BalikGasaController extends Controller
             ->whereIn('member_id', $members->pluck('id'))
             ->get()
             ->keyBy('member_id');
+        $balikGasaTotal = $payments
+            ->filter(fn (Collection $payment) => ! $payment->excluded_from_totals)
+            ->sum(fn (Collection $payment) => (float) $payment->amount);
 
         return view('balik-gasa.index', [
             'month' => $month,
             'monthLabel' => Carbon::createFromFormat('Y-m', $month)->format('F Y'),
+            'balikGasaTotal' => $balikGasaTotal,
+            'balikGasaIcpShare' => $balikGasaTotal * 0.60,
+            'balikGasaChapelShare' => $balikGasaTotal * 0.40,
             'hugpongBanays' => HugpongBanay::withCount(['members' => fn ($query) => $query->where('status', 'active')])
                 ->where('status', 'active')
                 ->orderBy('name')
