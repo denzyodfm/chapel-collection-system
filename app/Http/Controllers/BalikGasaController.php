@@ -54,6 +54,7 @@ class BalikGasaController extends Controller
         $data = $request->validate([
             'collection_month' => ['required', 'date_format:Y-m'],
             'amount' => ['required', 'numeric', 'gt:0', 'max:999999999.99'],
+            'collection_date' => ['required', 'date', 'before_or_equal:today'],
         ]);
 
         if ($member->status !== 'active') {
@@ -76,7 +77,7 @@ class BalikGasaController extends Controller
                 'member_id' => $member->id,
                 'collection_type' => Collection::BALIK_GASA,
                 'amount' => $data['amount'],
-                'collection_date' => now()->toDateString(),
+                'collection_date' => $data['collection_date'],
                 'collection_month' => $data['collection_month'],
                 'remarks' => 'Quick Balik Gasa payment',
                 'encoded_by' => $request->user()->id,

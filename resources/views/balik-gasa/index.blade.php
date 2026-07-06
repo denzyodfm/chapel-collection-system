@@ -58,10 +58,11 @@
                         <td class="px-4 py-3">{{ $payment?->collection_date?->format('M d, Y') ?: '-' }}</td>
                         <td class="px-4 py-3">
                             @if (! $payment && auth()->user()->hasAnyRole(['admin', 'treasurer']))
-                                <form method="POST" action="{{ route('balik-gasa.quick-pay', $member) }}" class="flex max-w-xs gap-2">
+                                <form method="POST" action="{{ route('balik-gasa.quick-pay', $member) }}" class="flex min-w-[22rem] flex-wrap gap-2">
                                     @csrf
                                     <input type="hidden" name="collection_month" value="{{ $month }}">
                                     <input name="amount" type="number" min="0.01" step="0.01" placeholder="Amount" required class="w-28 rounded-lg border border-slate-300 px-3 py-2 text-sm">
+                                    <input name="collection_date" type="date" value="{{ now()->format('Y-m-d') }}" required class="w-36 rounded-lg border border-slate-300 px-3 py-2 text-sm">
                                     <button class="inline-flex items-center justify-center gap-2 rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-white"><x-icon name="save" class="h-4 w-4" /> Pay</button>
                                 </form>
                             @elseif ($payment)

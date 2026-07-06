@@ -73,12 +73,12 @@
 </section>
 
 <section class="mt-6 grid gap-6 xl:grid-cols-[1fr_1.35fr]">
-    <article class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+    <article class="flex min-h-[20rem] flex-col rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
         <div class="flex items-center justify-between gap-4">
             <h2 class="text-lg font-bold text-sky-950">Recent Expenses</h2>
             <a href="{{ route('ledger.index') }}" class="text-sm font-semibold text-sky-700">Open ledger</a>
         </div>
-        <div class="mt-4 divide-y divide-slate-100">
+        <div class="mt-4 max-h-72 flex-1 divide-y divide-slate-100 overflow-y-auto pr-2">
             @forelse ($recentExpenses as $expense)
                 <div class="flex items-center justify-between gap-4 py-3">
                     <div>
@@ -98,14 +98,14 @@
         </div>
     </article>
 
-    <article class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+    <article class="flex min-h-[20rem] flex-col rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
         <div class="flex items-center justify-between gap-4">
             <h2 class="text-lg font-bold text-sky-950">Recent Collection Entries</h2>
             <a href="{{ route('reports.index', ['month' => $currentMonth]) }}" class="text-sm font-semibold text-sky-700">Monthly report</a>
         </div>
-        <div class="mt-4 overflow-x-auto">
+        <div class="mt-4 max-h-72 flex-1 overflow-auto pr-2">
             <table class="min-w-full text-left text-sm">
-                <thead class="bg-slate-50 text-xs uppercase text-slate-500">
+                <thead class="sticky top-0 bg-slate-50 text-xs uppercase text-slate-500">
                     <tr><th class="px-3 py-3">Date</th><th class="px-3 py-3">Member</th><th class="px-3 py-3">Type</th><th class="px-3 py-3 text-right">Amount</th></tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">

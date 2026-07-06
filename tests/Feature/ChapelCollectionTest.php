@@ -393,6 +393,31 @@ class ChapelCollectionTest extends TestCase
             ->assertJsonPath('months.1.reference_no', 'BG-2026-02');
     }
 
+    public function test_quick_balik_gasa_uses_selected_payment_date(): void
+    {
+        $treasurer = User::factory()->create(['role' => 'treasurer']);
+        $member = Member::create([
+            'full_name' => 'Quick Balik Member',
+            'status' => 'active',
+        ]);
+
+        $this->actingAs($treasurer)
+            ->post(route('balik-gasa.quick-pay', $member), [
+                'collection_month' => '2026-06',
+                'amount' => 100,
+                'collection_date' => '2026-06-15',
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('collections', [
+            'member_id' => $member->id,
+            'collection_type' => Collection::BALIK_GASA,
+            'amount' => 100,
+            'collection_date' => '2026-06-15 00:00:00',
+            'collection_month' => '2026-06',
+        ]);
+    }
+
     public function test_quick_donation_posts_member_donation_with_reference(): void
     {
         $treasurer = User::factory()->create(['role' => 'treasurer']);
