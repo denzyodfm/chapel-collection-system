@@ -72,6 +72,22 @@
     @endforeach
 </section>
 
+<section class="mt-6">
+    <div class="mb-3 flex items-center justify-between gap-4">
+        <h2 class="text-lg font-bold text-sky-950">Fund Balances</h2>
+        <a href="{{ route('ledger.index') }}" class="text-sm font-semibold text-sky-700">Open ledger</a>
+    </div>
+    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        @foreach ($fundSummaries as $summary)
+            <article class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+                <p class="text-sm font-semibold text-slate-500">{{ $summary['label'] }}</p>
+                <p class="mt-2 text-2xl font-bold text-sky-950">PHP {{ number_format((float) $summary['balance'], 2) }}</p>
+                <p class="mt-2 text-xs text-slate-500">Credits PHP {{ number_format((float) $summary['credits'], 2) }} / Debits PHP {{ number_format((float) $summary['debits'], 2) }}</p>
+            </article>
+        @endforeach
+    </div>
+</section>
+
 <section class="mt-6 grid gap-6 xl:grid-cols-[1fr_1.35fr]">
     <article class="flex min-h-[20rem] flex-col rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
         <div class="flex items-center justify-between gap-4">

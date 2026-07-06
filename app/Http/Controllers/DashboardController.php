@@ -51,6 +51,7 @@ class DashboardController extends Controller
                 ->where('collection_month', $currentMonth)
                 ->sum('amount'),
             'monthTotals' => $monthTotals,
+            'fundSummaries' => LedgerController::fundSummaries(),
             'activeMembersCount' => $activeMembersCount,
             'paidMembersCount' => $paidMembersCount,
             'unpaidMembersCount' => max($activeMembersCount - $paidMembersCount, 0),

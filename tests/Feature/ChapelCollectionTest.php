@@ -774,6 +774,14 @@ class ChapelCollectionTest extends TestCase
             ->assertSee('Total Chapel Fund')
             ->assertDontSee('General Chapel Fund')
             ->assertSee('PHP 700.00');
+
+        $this->actingAs($viewer)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee('Fund Balances')
+            ->assertSee('Total Chapel Fund')
+            ->assertSee('Credits PHP 850.00 / Debits PHP 150.00')
+            ->assertSee('PHP 700.00');
     }
 
     public function test_database_prevents_duplicate_balik_gasa_for_same_member_and_month(): void

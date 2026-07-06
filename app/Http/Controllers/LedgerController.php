@@ -99,7 +99,19 @@ class LedgerController extends Controller
             ->sortBy(fn ($row) => $row['date']?->format('Y-m-d').$row['source'])
             ->values();
 
-        $fundSummaries = collect(self::FUND_TYPES)->mapWithKeys(function ($label, $type) {
+        $fundSummaries = self::fundSummaries();
+
+        return view('ledger.index', [
+            'rows' => $rows,
+            'fundTypes' => self::FUND_TYPES,
+            'fundSummaries' => $fundSummaries,
+            'expenseCategories' => self::EXPENSE_CATEGORIES,
+        ]);
+    }
+
+    public static function fundSummaries()
+    {
+        return collect(self::FUND_TYPES)->mapWithKeys(function ($label, $type) {
             $collectionCredits = Collection::query()
                 ->includedInTotals()
                 ->when($type !== 'general', fn ($query) => $query->where('collection_type', $type))
@@ -123,13 +135,6 @@ class LedgerController extends Controller
                 'balance' => (float) $collectionCredits + (float) $manualCredits - (float) $manualDebits - (float) $expenses,
             ]];
         });
-
-        return view('ledger.index', [
-            'rows' => $rows,
-            'fundTypes' => self::FUND_TYPES,
-            'fundSummaries' => $fundSummaries,
-            'expenseCategories' => self::EXPENSE_CATEGORIES,
-        ]);
     }
 
     public function storeEntry(Request $request): RedirectResponse
