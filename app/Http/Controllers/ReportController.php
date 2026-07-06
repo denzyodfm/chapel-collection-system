@@ -124,6 +124,7 @@ class ReportController extends Controller
         $end = Carbon::createFromFormat('Y-m', $month)->endOfMonth()->toDateString();
 
         return Collection::query()
+            ->includedInTotals()
             ->where(function ($query) use ($month, $start, $end) {
                 $query->where(function ($query) use ($month) {
                     $query->where('collection_type', Collection::BALIK_GASA)

@@ -28,6 +28,9 @@ Route::middleware('auth')->group(function (): void {
         ->name('members.deactivate');
     Route::resource('members', MemberController::class)->middleware('role:admin,treasurer');
     Route::get('/members/{member}/balik-gasa-year', [MemberController::class, 'balikGasaYear'])->name('members.balik-gasa-year');
+    Route::post('/members/{member}/balik-gasa-historical', [MemberController::class, 'storeHistoricalBalikGasa'])
+        ->middleware('role:admin,treasurer')
+        ->name('members.balik-gasa-historical.store');
     Route::post('/hugpong-banays/{hugpongBanay}/members', [HugpongBanayController::class, 'storeMember'])
         ->middleware('role:admin,treasurer')
         ->name('hugpong-banays.members.store');

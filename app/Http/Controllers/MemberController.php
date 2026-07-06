@@ -6,6 +6,7 @@ use App\Models\Collection;
 use App\Models\HugpongBanay;
 use App\Models\Member;
 use Carbon\Carbon;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -14,6 +15,8 @@ use Illuminate\View\View;
 
 class MemberController extends Controller
 {
+    private const BALIK_GASA_TOTALS_START_MONTH = '2026-06';
+
     public function index(Request $request): View
     {
         $filters = $request->validate([
@@ -67,6 +70,7 @@ class MemberController extends Controller
             ->paginate(10);
         $totals = $member->collections()
             ->whereIn('collection_type', $memberCollectionTypes)
+            ->includedInTotals()
             ->selectRaw('collection_type, SUM(amount) as total')
             ->groupBy('collection_type')
             ->pluck('total', 'collection_type');
@@ -136,6 +140,8 @@ class MemberController extends Controller
                 'amount' => $payment ? (float) $payment->amount : 0,
                 'date' => $payment?->collection_date?->format('M d, Y'),
                 'reference_no' => $payment?->reference_no,
+                'excluded_from_totals' => (bool) $payment?->excluded_from_totals,
+                'can_record_historical' => ! $payment && $key < self::BALIK_GASA_TOTALS_START_MONTH,
             ];
         });
 
@@ -147,7 +153,42 @@ class MemberController extends Controller
             ],
             'year' => $year,
             'months' => $months,
+            'historical_store_url' => route('members.balik-gasa-historical.store', $member),
+            'historical_cutoff_month' => self::BALIK_GASA_TOTALS_START_MONTH,
         ]);
+    }
+
+    public function storeHistoricalBalikGasa(Request $request, Member $member): RedirectResponse
+    {
+        $data = $request->validate([
+            'collection_month' => ['required', 'date_format:Y-m', 'before:'.self::BALIK_GASA_TOTALS_START_MONTH],
+            'amount' => ['required', 'numeric', 'gt:0', 'max:999999999.99'],
+        ]);
+
+        if ($member->status !== 'active') {
+            return back()->with('error', 'Only active members can receive Balik Gasa plot payments.');
+        }
+
+        try {
+            Collection::create([
+                'member_id' => $member->id,
+                'collection_type' => Collection::BALIK_GASA,
+                'amount' => $data['amount'],
+                'collection_date' => Carbon::createFromFormat('Y-m', $data['collection_month'])->endOfMonth()->toDateString(),
+                'collection_month' => $data['collection_month'],
+                'excluded_from_totals' => true,
+                'remarks' => 'Historical Balik Gasa payment already included in beginning balance.',
+                'encoded_by' => $request->user()->id,
+            ]);
+        } catch (QueryException $exception) {
+            if ($exception->getCode() === '23000') {
+                return back()->with('error', "{$member->full_name} already has a Balik Gasa entry for {$data['collection_month']}.");
+            }
+
+            throw $exception;
+        }
+
+        return back()->with('success', 'Historical Balik Gasa amount saved for the member plot.');
     }
 
     private function validated(Request $request, ?Member $member = null): array

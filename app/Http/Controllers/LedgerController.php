@@ -41,6 +41,7 @@ class LedgerController extends Controller
         $dateTo = $validated['date_to'] ?? null;
 
         $collectionRows = Collection::with('member')
+            ->includedInTotals()
             ->when($fundType && $fundType !== 'general', fn ($query) => $query->where('collection_type', $fundType))
             ->when($dateFrom, fn ($query, $date) => $query->whereDate('collection_date', '>=', $date))
             ->when($dateTo, fn ($query, $date) => $query->whereDate('collection_date', '<=', $date))
@@ -100,6 +101,7 @@ class LedgerController extends Controller
 
         $fundSummaries = collect(self::FUND_TYPES)->mapWithKeys(function ($label, $type) {
             $collectionCredits = Collection::query()
+                ->includedInTotals()
                 ->when($type !== 'general', fn ($query) => $query->where('collection_type', $type))
                 ->sum('amount');
             $manualCredits = LedgerEntry::query()

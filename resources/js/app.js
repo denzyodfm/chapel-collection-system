@@ -152,15 +152,38 @@ async function loadBalikGasaPlot() {
     title.textContent = `${data.member.member_id} - ${data.member.name}`;
     yearLabel.textContent = data.year;
     grid.innerHTML = data.months.map((month) => {
-        const paidClass = month.paid ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-rose-200 bg-rose-50 text-rose-800';
-        const status = month.paid ? `Paid PHP ${Number(month.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'Unpaid';
+        const paidClass = month.excluded_from_totals
+            ? 'border-amber-200 bg-amber-50 text-amber-800'
+            : 'border-emerald-200 bg-emerald-50 text-emerald-800';
+        const blankClass = month.can_record_historical
+            ? 'border-slate-200 bg-white text-slate-800'
+            : 'border-slate-200 bg-slate-50 text-slate-700';
+        const cardClass = month.paid ? paidClass : blankClass;
+        const amount = Number(month.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         const date = month.date || '-';
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+        const paymentContent = month.paid
+            ? `
+                <p class="mt-2 text-lg font-bold">${month.excluded_from_totals ? 'Historical PHP' : 'Paid PHP'} ${amount}</p>
+                <p class="mt-1 text-xs opacity-80">${month.excluded_from_totals ? 'Excluded from totals' : date}</p>
+            `
+            : '';
+        const historicalForm = month.can_record_historical
+            ? `
+                <form method="POST" action="${data.historical_store_url}" class="mt-3 flex gap-2">
+                    <input type="hidden" name="_token" value="${csrfToken}">
+                    <input type="hidden" name="collection_month" value="${month.month}">
+                    <input name="amount" type="number" min="0.01" step="0.01" placeholder="Amount" required class="min-w-0 flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900">
+                    <button class="rounded-lg bg-amber-500 px-3 py-2 text-sm font-semibold text-white">Save</button>
+                </form>
+            `
+            : '';
 
         return `
-            <div class="rounded-lg border ${paidClass} p-4">
+            <div class="rounded-lg border ${cardClass} p-4">
                 <p class="text-sm font-bold">${month.label}</p>
-                <p class="mt-2 text-lg font-bold">${status}</p>
-                <p class="mt-1 text-xs opacity-80">${date}</p>
+                ${paymentContent}
+                ${historicalForm}
             </div>
         `;
     }).join('');

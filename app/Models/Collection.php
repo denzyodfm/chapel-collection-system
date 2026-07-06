@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -30,6 +31,7 @@ class Collection extends Model
         'collection_date',
         'collection_month',
         'reference_no',
+        'excluded_from_totals',
         'remarks',
         'encoded_by',
     ];
@@ -39,6 +41,7 @@ class Collection extends Model
         return [
             'amount' => 'decimal:2',
             'collection_date' => 'date',
+            'excluded_from_totals' => 'boolean',
         ];
     }
 
@@ -55,5 +58,10 @@ class Collection extends Model
     public function typeLabel(): string
     {
         return self::TYPES[$this->collection_type] ?? $this->collection_type;
+    }
+
+    public function scopeIncludedInTotals(Builder $query): Builder
+    {
+        return $query->where('excluded_from_totals', false);
     }
 }

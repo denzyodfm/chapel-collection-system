@@ -424,7 +424,62 @@ class ChapelCollectionTest extends TestCase
             ->assertOk()
             ->assertJsonPath('member.name', 'Plot Member')
             ->assertJsonPath('months.1.paid', true)
-            ->assertJsonPath('months.1.reference_no', 'BG-2026-02');
+            ->assertJsonPath('months.1.reference_no', 'BG-2026-02')
+            ->assertJsonPath('months.2.paid', false)
+            ->assertJsonPath('months.2.can_record_historical', true)
+            ->assertJsonPath('months.5.can_record_historical', false);
+    }
+
+    public function test_historical_balik_gasa_plot_payment_is_excluded_from_totals(): void
+    {
+        $treasurer = User::factory()->create(['role' => 'treasurer']);
+        $member = Member::create([
+            'full_name' => 'Historical Plot Member',
+            'status' => 'active',
+        ]);
+
+        $this->actingAs($treasurer)
+            ->post(route('members.balik-gasa-historical.store', $member), [
+                'collection_month' => '2026-05',
+                'amount' => 450,
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('collections', [
+            'member_id' => $member->id,
+            'collection_type' => Collection::BALIK_GASA,
+            'collection_month' => '2026-05',
+            'amount' => 450,
+            'excluded_from_totals' => true,
+        ]);
+
+        $this->actingAs($treasurer)
+            ->getJson(route('members.balik-gasa-year', ['member' => $member, 'year' => 2026]))
+            ->assertOk()
+            ->assertJsonPath('months.4.paid', true)
+            ->assertJsonPath('months.4.excluded_from_totals', true)
+            ->assertJsonPath('months.4.amount', 450);
+
+        $this->actingAs($treasurer)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertDontSee('PHP 450.00');
+    }
+
+    public function test_historical_balik_gasa_plot_payment_is_only_allowed_before_june_2026(): void
+    {
+        $treasurer = User::factory()->create(['role' => 'treasurer']);
+        $member = Member::create([
+            'full_name' => 'Rejected Historical Plot Member',
+            'status' => 'active',
+        ]);
+
+        $this->actingAs($treasurer)
+            ->post(route('members.balik-gasa-historical.store', $member), [
+                'collection_month' => '2026-06',
+                'amount' => 450,
+            ])
+            ->assertSessionHasErrors('collection_month');
     }
 
     public function test_quick_balik_gasa_uses_selected_payment_date(): void

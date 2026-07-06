@@ -15,17 +15,20 @@ class DashboardController extends Controller
         $currentMonth = now()->format('Y-m');
         $activeMembersCount = Member::active()->count();
         $totals = Collection::query()
+            ->includedInTotals()
             ->selectRaw('collection_type, SUM(amount) as total')
             ->groupBy('collection_type')
             ->pluck('total', 'collection_type');
 
         $paidMemberIds = Collection::query()
+            ->includedInTotals()
             ->where('collection_type', Collection::BALIK_GASA)
             ->where('collection_month', $currentMonth)
             ->pluck('member_id');
 
         $paidMembersCount = $paidMemberIds->unique()->count();
         $monthTotals = Collection::query()
+            ->includedInTotals()
             ->selectRaw('collection_type, SUM(amount) as total')
             ->where(function ($query) use ($currentMonth) {
                 $query->where(function ($query) use ($currentMonth) {
@@ -44,6 +47,7 @@ class DashboardController extends Controller
             'currentMonthLabel' => Carbon::createFromFormat('Y-m', $currentMonth)->format('F Y'),
             'currentMonth' => $currentMonth,
             'currentMonthBalikGasa' => Collection::where('collection_type', Collection::BALIK_GASA)
+                ->includedInTotals()
                 ->where('collection_month', $currentMonth)
                 ->sum('amount'),
             'monthTotals' => $monthTotals,
@@ -52,7 +56,7 @@ class DashboardController extends Controller
             'unpaidMembersCount' => max($activeMembersCount - $paidMembersCount, 0),
             'paidRate' => $activeMembersCount > 0 ? round(($paidMembersCount / $activeMembersCount) * 100) : 0,
             'recentExpenses' => Expense::with('encoder')->latest('expense_date')->latest()->limit(6)->get(),
-            'recentCollections' => Collection::with(['member', 'encoder'])->latest('collection_date')->latest()->limit(8)->get(),
+            'recentCollections' => Collection::with(['member', 'encoder'])->includedInTotals()->latest('collection_date')->latest()->limit(8)->get(),
         ]);
     }
 }
