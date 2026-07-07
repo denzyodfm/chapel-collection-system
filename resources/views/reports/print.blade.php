@@ -78,7 +78,6 @@
                         <th class="border border-slate-300 px-3 py-2">Member</th>
                         <th class="border border-slate-300 px-3 py-2">Type</th>
                         <th class="border border-slate-300 px-3 py-2">Reference</th>
-                        <th class="border border-slate-300 px-3 py-2">Remarks</th>
                         <th class="border border-slate-300 px-3 py-2 text-right">Amount</th>
                     </tr>
                 </thead>
@@ -90,11 +89,10 @@
                             <td class="border border-slate-300 px-3 py-2">{{ $collection->member?->full_name ?: 'All members / Mass collection' }}</td>
                             <td class="border border-slate-300 px-3 py-2">{{ $collection->typeLabel() }}</td>
                             <td class="border border-slate-300 px-3 py-2">{{ $collection->reference_no ?: '-' }}</td>
-                            <td class="border border-slate-300 px-3 py-2">{{ $collection->remarks ?: '-' }}</td>
                             <td class="border border-slate-300 px-3 py-2 text-right font-semibold">PHP {{ number_format((float) $collection->amount, 2) }}</td>
                         </tr>
                     @empty
-                        <tr><td colspan="7" class="border border-slate-300 px-3 py-6 text-center text-slate-500">No collection entries for this report.</td></tr>
+                        <tr><td colspan="6" class="border border-slate-300 px-3 py-6 text-center text-slate-500">No collection entries for this report.</td></tr>
                     @endforelse
                 </tbody>
             </table>
