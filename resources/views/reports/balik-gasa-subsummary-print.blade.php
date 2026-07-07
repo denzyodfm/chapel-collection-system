@@ -14,9 +14,9 @@
         </div>
 
         <header class="border-b-2 border-slate-900 pb-5 text-center">
-            <p class="text-sm font-semibold uppercase tracking-wide text-slate-600">Princess Homes Fatima Chapel</p>
-            <h1 class="mt-2 text-2xl font-bold text-slate-950">Balik Gasa Subsummary by Hugpong Banay</h1>
-            <p class="mt-1 text-sm text-slate-600">{{ $monthLabel }} only. Donation and Offering are not included.</p>
+            <p class="text-lg font-bold uppercase tracking-wide text-slate-700">Princess Homes Fatima Chapel</p>
+            <h1 class="mt-2 text-xl font-bold text-slate-950">Balik Gasa Subsummary by Hugpong Banay</h1>
+            <p class="mt-1 text-base font-semibold text-slate-600">{{ $monthLabel }}</p>
         </header>
 
         <section class="mt-6 grid grid-cols-4 gap-3">
