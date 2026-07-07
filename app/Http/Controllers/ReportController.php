@@ -91,11 +91,13 @@ class ReportController extends Controller
             ->groupBy('collection_type')
             ->map(fn ($rows) => $rows->sum('amount'));
         $balikGasaShares = $this->balikGasaSharesByHugpongBanay($month);
+        $balikGasaSubsummary = $this->balikGasaSubsummaryByHugpongBanay($month);
 
         return view('reports.print', [
             'collections' => $collections,
             'summary' => $summary,
             'balikGasaShares' => $balikGasaShares,
+            'balikGasaSubsummary' => $balikGasaSubsummary,
             'month' => $month,
             'monthLabel' => Carbon::createFromFormat('Y-m', $month)->format('F Y'),
             'types' => Collection::TYPES,

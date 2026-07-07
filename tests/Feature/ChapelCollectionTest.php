@@ -895,6 +895,16 @@ class ChapelCollectionTest extends TestCase
             ->assertSee('PHP 120.00');
 
         $this->actingAs($viewer)
+            ->get(route('reports.print', ['month' => '2026-06', 'collection_type' => Collection::BALIK_GASA]))
+            ->assertOk()
+            ->assertSee('BALIK GASA - June 2026')
+            ->assertSee('San Isidro')
+            ->assertSee('Report Member One')
+            ->assertSee('Grand Total')
+            ->assertSee('PHP 300.00')
+            ->assertDontSee('PHP 999.00');
+
+        $this->actingAs($viewer)
             ->get(route('reports.balik-gasa-subsummary.print', ['month' => '2026-06']))
             ->assertOk()
             ->assertSee('Balik Gasa Subsummary by Hugpong Banay')
