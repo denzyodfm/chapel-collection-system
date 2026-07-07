@@ -31,6 +31,9 @@ Route::middleware('auth')->group(function (): void {
     Route::post('/members/{member}/balik-gasa-historical', [MemberController::class, 'storeHistoricalBalikGasa'])
         ->middleware('role:admin,treasurer')
         ->name('members.balik-gasa-historical.store');
+    Route::patch('/members/{member}/balik-gasa-historical/{collection}', [MemberController::class, 'updateHistoricalBalikGasa'])
+        ->middleware('role:admin,treasurer')
+        ->name('members.balik-gasa-historical.update');
     Route::post('/hugpong-banays/{hugpongBanay}/members', [HugpongBanayController::class, 'storeMember'])
         ->middleware('role:admin,treasurer')
         ->name('hugpong-banays.members.store');

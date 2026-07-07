@@ -160,14 +160,25 @@ async function loadBalikGasaPlot() {
             : 'border-slate-200 bg-slate-50 text-slate-700';
         const cardClass = month.paid ? paidClass : blankClass;
         const amount = Number(month.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const rawAmount = Number(month.amount).toFixed(2);
         const date = month.date || '-';
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
-        const paymentContent = month.paid
+        const paymentContent = month.paid && month.excluded_from_totals
             ? `
-                <p class="mt-2 text-lg font-bold">${month.excluded_from_totals ? 'Historical PHP' : 'Paid PHP'} ${amount}</p>
-                <p class="mt-1 text-xs opacity-80">${month.excluded_from_totals ? 'Excluded from totals' : date}</p>
+                <form method="POST" action="${month.historical_update_url}" class="mt-3 grid gap-2">
+                    <input type="hidden" name="_token" value="${csrfToken}">
+                    <input type="hidden" name="_method" value="PATCH">
+                    <input name="amount" type="number" min="0.01" step="0.01" value="${rawAmount}" required class="w-full rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm font-semibold text-amber-900">
+                    <button class="rounded-lg bg-amber-500 px-3 py-2 text-sm font-semibold text-white">Update</button>
+                </form>
+                <p class="mt-2 text-xs opacity-80">Excluded from totals</p>
             `
-            : '';
+            : month.paid
+                ? `
+                    <p class="mt-2 text-lg font-bold">PHP ${amount}</p>
+                    <p class="mt-1 text-xs opacity-80">${date}</p>
+                `
+                : '';
         const historicalForm = month.can_record_historical
             ? `
                 <form method="POST" action="${data.historical_store_url}" class="mt-3 flex gap-2">

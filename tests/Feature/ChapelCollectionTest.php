@@ -453,17 +453,32 @@ class ChapelCollectionTest extends TestCase
             'excluded_from_totals' => true,
         ]);
 
+        $historicalPayment = Collection::where('member_id', $member->id)->firstOrFail();
+
         $this->actingAs($treasurer)
             ->getJson(route('members.balik-gasa-year', ['member' => $member, 'year' => 2026]))
             ->assertOk()
             ->assertJsonPath('months.4.paid', true)
             ->assertJsonPath('months.4.excluded_from_totals', true)
-            ->assertJsonPath('months.4.amount', 450);
+            ->assertJsonPath('months.4.amount', 450)
+            ->assertJsonPath('months.4.historical_update_url', route('members.balik-gasa-historical.update', [$member, $historicalPayment]));
+
+        $this->actingAs($treasurer)
+            ->patch(route('members.balik-gasa-historical.update', [$member, $historicalPayment]), [
+                'amount' => 525,
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('collections', [
+            'id' => $historicalPayment->id,
+            'amount' => 525,
+            'excluded_from_totals' => true,
+        ]);
 
         $this->actingAs($treasurer)
             ->get(route('dashboard'))
             ->assertOk()
-            ->assertDontSee('PHP 450.00');
+            ->assertDontSee('PHP 525.00');
     }
 
     public function test_historical_balik_gasa_plot_payment_is_only_allowed_before_june_2026(): void

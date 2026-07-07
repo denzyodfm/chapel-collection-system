@@ -129,7 +129,7 @@ class MemberController extends Controller
             ->get()
             ->keyBy('collection_month');
 
-        $months = collect(range(1, 12))->map(function ($month) use ($year, $payments) {
+        $months = collect(range(1, 12))->map(function ($month) use ($year, $payments, $member) {
             $key = sprintf('%d-%02d', $year, $month);
             $payment = $payments->get($key);
 
@@ -142,6 +142,7 @@ class MemberController extends Controller
                 'reference_no' => $payment?->reference_no,
                 'excluded_from_totals' => (bool) $payment?->excluded_from_totals,
                 'can_record_historical' => ! $payment && $key < self::BALIK_GASA_TOTALS_START_MONTH,
+                'historical_update_url' => $payment?->excluded_from_totals ? route('members.balik-gasa-historical.update', [$member, $payment]) : null,
             ];
         });
 
@@ -189,6 +190,27 @@ class MemberController extends Controller
         }
 
         return back()->with('success', 'Historical Balik Gasa amount saved for the member plot.');
+    }
+
+    public function updateHistoricalBalikGasa(Request $request, Member $member, Collection $collection): RedirectResponse
+    {
+        abort_unless(
+            $collection->member_id === $member->id
+            && $collection->collection_type === Collection::BALIK_GASA
+            && $collection->excluded_from_totals
+            && $collection->collection_month < self::BALIK_GASA_TOTALS_START_MONTH,
+            404
+        );
+
+        $data = $request->validate([
+            'amount' => ['required', 'numeric', 'gt:0', 'max:999999999.99'],
+        ]);
+
+        $collection->update([
+            'amount' => $data['amount'],
+        ]);
+
+        return back()->with('success', 'Historical Balik Gasa amount updated.');
     }
 
     private function validated(Request $request, ?Member $member = null): array
