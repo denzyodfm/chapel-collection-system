@@ -153,6 +153,7 @@
     <div class="flex flex-wrap items-center justify-between gap-3">
         <h2 class="text-lg font-bold text-sky-950">Monthly Report: {{ \Carbon\Carbon::createFromFormat('Y-m', $month)->format('F Y') }}</h2>
         <div class="flex flex-wrap gap-2 print:hidden">
+            <a href="{{ route('reports.balik-gasa-subsummary.print', ['month' => $month]) }}" target="_blank" class="rounded-lg border border-emerald-200 px-3 py-2 text-xs font-semibold text-emerald-700 hover:bg-emerald-50">Print BG Subsummary</a>
             @foreach ($types as $type => $label)
                 <a href="{{ route('reports.print', ['month' => $month, 'collection_type' => $type]) }}" target="_blank" class="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50">Print {{ $label }}</a>
             @endforeach
