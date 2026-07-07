@@ -51,13 +51,16 @@
                             <p class="text-xs text-slate-500">ICP PHP {{ number_format((float) $group['icp_share'], 2) }} / Chapel PHP {{ number_format((float) $group['chapel_share'], 2) }}</p>
                         </div>
                     </div>
+                    <div class="mb-3 grid grid-cols-2 gap-10 text-xs">
+                        <div class="border-t border-slate-500 pt-1 text-center">Signature</div>
+                        <div class="border-t border-slate-500 pt-1 text-center">Signature</div>
+                    </div>
                     <table class="w-full border-collapse text-left text-sm">
                         <thead>
                             <tr class="bg-slate-100">
                                 <th class="border border-slate-300 px-3 py-2">Date</th>
                                 <th class="border border-slate-300 px-3 py-2">Member ID</th>
                                 <th class="border border-slate-300 px-3 py-2">Member</th>
-                                <th class="border border-slate-300 px-3 py-2">Remarks</th>
                                 <th class="border border-slate-300 px-3 py-2 text-right">Amount</th>
                             </tr>
                         </thead>
@@ -67,12 +70,11 @@
                                     <td class="border border-slate-300 px-3 py-2">{{ $collection->collection_date->format('M d, Y') }}</td>
                                     <td class="border border-slate-300 px-3 py-2">{{ $collection->member?->member_id ?: '-' }}</td>
                                     <td class="border border-slate-300 px-3 py-2">{{ $collection->member?->full_name ?: 'Unknown member' }}</td>
-                                    <td class="border border-slate-300 px-3 py-2">{{ $collection->remarks ?: '-' }}</td>
                                     <td class="border border-slate-300 px-3 py-2 text-right font-semibold">PHP {{ number_format((float) $collection->amount, 2) }}</td>
                                 </tr>
                             @endforeach
                             <tr class="bg-slate-50 font-bold">
-                                <td colspan="4" class="border border-slate-300 px-3 py-2 text-right">Subtotal</td>
+                                <td colspan="3" class="border border-slate-300 px-3 py-2 text-right">Subtotal</td>
                                 <td class="border border-slate-300 px-3 py-2 text-right">PHP {{ number_format((float) $group['total'], 2) }}</td>
                             </tr>
                         </tbody>
