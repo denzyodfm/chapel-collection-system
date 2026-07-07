@@ -5,8 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Monthly Report - {{ $monthLabel }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <style>
+        @media print {
+            .print-page-number::after {
+                content: "Page " counter(page) " of " counter(pages);
+            }
+        }
+    </style>
 </head>
 <body class="bg-white text-slate-900 antialiased">
+    <div class="print-page-number fixed right-6 top-4 hidden text-xs font-semibold text-slate-600 print:block"></div>
     <main class="mx-auto max-w-5xl px-6 py-8">
         <div class="mb-6 flex items-center justify-between gap-4 print:hidden">
             <a href="{{ route('reports.index', ['month' => $month]) }}" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Back to Reports</a>
