@@ -377,7 +377,7 @@ class ChapelCollectionTest extends TestCase
             'status' => 'active',
         ]);
 
-        Collection::create([
+        $balikGasa = Collection::create([
             'member_id' => $member->id,
             'collection_type' => Collection::BALIK_GASA,
             'amount' => 100,
@@ -398,6 +398,7 @@ class ChapelCollectionTest extends TestCase
             ->assertOk()
             ->assertSee('Balik Gasa')
             ->assertSee('Donation')
+            ->assertSee(route('collections.edit', $balikGasa), false)
             ->assertDontSee('<p class="text-sm text-slate-500">Offering</p>', false)
             ->assertDontSee('PHP 500.00');
     }

@@ -42,12 +42,12 @@
         <h2 class="text-lg font-bold text-sky-950">Collection History</h2>
         <div class="mt-4 overflow-x-auto">
             <table class="min-w-full text-left text-sm">
-                <thead class="bg-slate-50 text-xs uppercase text-slate-500"><tr><th class="px-3 py-3">Date</th><th class="px-3 py-3">Type</th><th class="px-3 py-3">Month</th><th class="px-3 py-3 text-right">Amount</th></tr></thead>
+                <thead class="bg-slate-50 text-xs uppercase text-slate-500"><tr><th class="px-3 py-3">Date</th><th class="px-3 py-3">Type</th><th class="px-3 py-3">Month</th><th class="px-3 py-3 text-right">Amount</th><th class="px-3 py-3 text-right">Actions</th></tr></thead>
                 <tbody class="divide-y divide-slate-100">
                     @forelse ($collections as $collection)
-                        <tr><td class="px-3 py-3">{{ $collection->collection_date->format('M d, Y') }}</td><td class="px-3 py-3">{{ $collection->typeLabel() }}</td><td class="px-3 py-3">{{ $collection->collection_month ?: '—' }}</td><td class="px-3 py-3 text-right font-semibold">PHP {{ number_format((float) $collection->amount, 2) }}</td></tr>
+                        <tr><td class="px-3 py-3">{{ $collection->collection_date->format('M d, Y') }}</td><td class="px-3 py-3">{{ $collection->typeLabel() }}</td><td class="px-3 py-3">{{ $collection->collection_month ?: '-' }}</td><td class="px-3 py-3 text-right font-semibold">PHP {{ number_format((float) $collection->amount, 2) }}</td><td class="px-3 py-3 text-right"><a href="{{ route('collections.edit', $collection) }}" class="inline-flex items-center gap-1 font-semibold text-amber-700 hover:text-amber-800"><x-icon name="edit" class="h-3.5 w-3.5" /> Edit</a></td></tr>
                     @empty
-                        <tr><td colspan="4" class="px-3 py-6 text-center text-slate-500">No collection history yet.</td></tr>
+                        <tr><td colspan="5" class="px-3 py-6 text-center text-slate-500">No collection history yet.</td></tr>
                     @endforelse
                 </tbody>
             </table>
