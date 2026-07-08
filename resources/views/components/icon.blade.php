@@ -47,6 +47,12 @@
         @case('x')
             <path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6 6 18" />
             @break
+        @case('lock')
+            <path stroke-linecap="round" stroke-linejoin="round" d="M7 10V7a5 5 0 0 1 10 0v3M6 10h12v10H6V10Zm6 4v2" />
+            @break
+        @case('unlock')
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 10V7a5 5 0 0 1 9-3M6 10h12v10H6V10Zm6 4v2" />
+            @break
         @default
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14M5 12h14" />
     @endswitch

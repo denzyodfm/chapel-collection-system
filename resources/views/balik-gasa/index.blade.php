@@ -20,6 +20,8 @@
     </div>
 </form>
 
+<x-month-lock-panel :lockable-type="\App\Models\Collection::BALIK_GASA" :month="$month" :month-label="$monthLabel" :lock="$monthLock" />
+
 <section class="mb-5 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
     <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
         <div>
@@ -65,7 +67,9 @@
                         <td class="px-4 py-3 text-right font-semibold">{{ $payment ? 'PHP '.number_format((float) $payment->amount, 2) : '-' }}</td>
                         <td class="px-4 py-3">{{ $payment?->collection_date?->format('M d, Y') ?: '-' }}</td>
                         <td class="px-4 py-3">
-                            @if (! $payment && auth()->user()->hasAnyRole(['admin', 'treasurer']))
+                            @if ($monthLock)
+                                <span class="rounded-lg bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700">Month locked</span>
+                            @elseif (! $payment && auth()->user()->hasAnyRole(['admin', 'treasurer']))
                                 <form method="POST" action="{{ route('balik-gasa.quick-pay', $member) }}" class="flex min-w-[22rem] flex-wrap gap-2">
                                     @csrf
                                     <input type="hidden" name="collection_month" value="{{ $month }}">
@@ -80,7 +84,9 @@
                             @endif
                         </td>
                         <td class="px-4 py-3 text-right">
-                            @if ($payment && auth()->user()->hasAnyRole(['admin', 'treasurer']))
+                            @if ($monthLock)
+                                <span class="text-rose-600">Locked</span>
+                            @elseif ($payment && auth()->user()->hasAnyRole(['admin', 'treasurer']))
                                 <a href="{{ route('collections.edit', $payment) }}" class="inline-flex items-center gap-1 font-semibold text-amber-700"><x-icon name="edit" class="h-3.5 w-3.5" /> Edit</a>
                                 <form class="inline" method="POST" action="{{ route('collections.destroy', $payment) }}" onsubmit="return confirm('Delete this Balik Gasa payment?')">
                                     @csrf @method('DELETE')

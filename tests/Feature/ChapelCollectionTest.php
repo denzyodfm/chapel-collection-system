@@ -8,6 +8,7 @@ use App\Models\HugpongBanay;
 use App\Models\HugpongBanayLeaderHistory;
 use App\Models\LedgerEntry;
 use App\Models\Member;
+use App\Models\MonthLock;
 use App\Models\User;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -25,7 +26,7 @@ class ChapelCollectionTest extends TestCase
             ->get(route('dashboard'))
             ->assertOk()
             ->assertSee('Dashboard')
-            ->assertSee('Recent Expenses');
+            ->assertSee('Recent Disbursements');
     }
 
     public function test_valid_login_redirects_to_dashboard(): void
@@ -569,6 +570,102 @@ class ChapelCollectionTest extends TestCase
         ]);
     }
 
+    public function test_month_lock_blocks_balik_gasa_encoding_until_admin_unlocks(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $treasurer = User::factory()->create(['role' => 'treasurer']);
+        $member = Member::create([
+            'full_name' => 'Locked Month Member',
+            'status' => 'active',
+        ]);
+
+        $this->actingAs($treasurer)
+            ->post(route('month-locks.store'), [
+                'lockable_type' => Collection::BALIK_GASA,
+                'month' => '2026-06',
+            ])
+            ->assertRedirect();
+
+        $this->actingAs($treasurer)
+            ->post(route('balik-gasa.quick-pay', $member), [
+                'collection_month' => '2026-06',
+                'amount' => 100,
+                'collection_date' => '2026-06-20',
+            ])
+            ->assertSessionHas('error', MonthLock::lockedMessage(Collection::BALIK_GASA, '2026-06'));
+
+        $this->assertDatabaseMissing('collections', [
+            'member_id' => $member->id,
+            'collection_type' => Collection::BALIK_GASA,
+            'collection_month' => '2026-06',
+        ]);
+
+        $lock = MonthLock::where('lockable_type', Collection::BALIK_GASA)->where('month', '2026-06')->firstOrFail();
+
+        $this->actingAs($admin)
+            ->delete(route('month-locks.destroy', $lock))
+            ->assertRedirect();
+
+        $this->actingAs($treasurer)
+            ->post(route('balik-gasa.quick-pay', $member), [
+                'collection_month' => '2026-06',
+                'amount' => 100,
+                'collection_date' => '2026-06-20',
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('collections', [
+            'member_id' => $member->id,
+            'collection_type' => Collection::BALIK_GASA,
+            'collection_month' => '2026-06',
+        ]);
+    }
+
+    public function test_disbursement_lock_blocks_create_edit_and_delete(): void
+    {
+        $treasurer = User::factory()->create(['role' => 'treasurer']);
+        MonthLock::create([
+            'lockable_type' => MonthLock::DISBURSEMENT,
+            'month' => '2026-06',
+            'locked_by' => $treasurer->id,
+        ]);
+
+        $this->actingAs($treasurer)
+            ->post(route('ledger.expenses.store'), [
+                'fund_type' => Collection::BALIK_GASA,
+                'category' => 'Maintenance',
+                'amount' => 100,
+                'expense_date' => '2026-06-15',
+            ])
+            ->assertSessionHasErrors('expense_date');
+
+        $expense = Expense::create([
+            'fund_type' => Collection::BALIK_GASA,
+            'category' => 'Maintenance',
+            'amount' => 100,
+            'expense_date' => '2026-06-15',
+            'encoded_by' => $treasurer->id,
+        ]);
+
+        $this->actingAs($treasurer)
+            ->put(route('ledger.expenses.update', $expense), [
+                'fund_type' => Collection::BALIK_GASA,
+                'category' => 'Maintenance',
+                'amount' => 150,
+                'expense_date' => '2026-06-16',
+            ])
+            ->assertSessionHasErrors('expense_date');
+
+        $this->actingAs($treasurer)
+            ->delete(route('ledger.expenses.destroy', $expense))
+            ->assertSessionHas('error', MonthLock::lockedMessage(MonthLock::DISBURSEMENT, '2026-06'));
+
+        $this->assertDatabaseHas('expenses', [
+            'id' => $expense->id,
+            'deleted_at' => null,
+        ]);
+    }
+
     public function test_collection_index_search_filters_by_member_name(): void
     {
         $treasurer = User::factory()->create(['role' => 'treasurer']);
@@ -601,7 +698,7 @@ class ChapelCollectionTest extends TestCase
             ->assertDontSee('<td class="px-4 py-3 font-medium">Jose Dela Cruz</td>', false);
     }
 
-    public function test_ledger_can_record_manual_entry_and_expense(): void
+    public function test_ledger_can_record_manual_entry_and_disbursement(): void
     {
         $treasurer = User::factory()->create(['role' => 'treasurer']);
 
@@ -640,7 +737,7 @@ class ChapelCollectionTest extends TestCase
         ]);
     }
 
-    public function test_expense_can_be_edited_and_deleted(): void
+    public function test_disbursement_can_be_edited_and_deleted(): void
     {
         $treasurer = User::factory()->create(['role' => 'treasurer']);
         $expense = Expense::create([
@@ -655,7 +752,7 @@ class ChapelCollectionTest extends TestCase
         $this->actingAs($treasurer)
             ->get(route('ledger.expenses.edit', $expense))
             ->assertOk()
-            ->assertSee('Edit Expense');
+            ->assertSee('Edit Disbursement');
 
         $this->actingAs($treasurer)
             ->put(route('ledger.expenses.update', $expense), [
@@ -721,7 +818,7 @@ class ChapelCollectionTest extends TestCase
         ]);
     }
 
-    public function test_dashboard_shows_recent_expenses(): void
+    public function test_dashboard_shows_recent_disbursements(): void
     {
         $viewer = User::factory()->create(['role' => 'viewer']);
         $treasurer = User::factory()->create(['role' => 'treasurer']);
@@ -738,7 +835,7 @@ class ChapelCollectionTest extends TestCase
         $this->actingAs($viewer)
             ->get(route('dashboard'))
             ->assertOk()
-            ->assertSee('Recent Expenses')
+            ->assertSee('Recent Disbursements')
             ->assertSee('Electric Bill')
             ->assertSee('Power Company')
             ->assertSee('PHP 1,200.00')

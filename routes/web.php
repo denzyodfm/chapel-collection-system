@@ -8,6 +8,7 @@ use App\Http\Controllers\DonationController;
 use App\Http\Controllers\HugpongBanayController;
 use App\Http\Controllers\LedgerController;
 use App\Http\Controllers\MemberController;
+use App\Http\Controllers\MonthLockController;
 use App\Http\Controllers\OfferingController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\UserController;
@@ -39,6 +40,8 @@ Route::middleware('auth')->group(function (): void {
         ->name('hugpong-banays.members.store');
     Route::resource('hugpong-banays', HugpongBanayController::class)->middleware('role:admin,treasurer');
     Route::resource('collections', CollectionController::class)->except('show')->middleware('role:admin,treasurer');
+    Route::post('/month-locks', [MonthLockController::class, 'store'])->middleware('role:admin,treasurer')->name('month-locks.store');
+    Route::delete('/month-locks/{monthLock}', [MonthLockController::class, 'destroy'])->middleware('role:admin')->name('month-locks.destroy');
     Route::get('/ledger', [LedgerController::class, 'index'])->name('ledger.index');
     Route::post('/ledger/entries', [LedgerController::class, 'storeEntry'])->middleware('role:admin,treasurer')->name('ledger.entries.store');
     Route::delete('/ledger/entries/{entry}', [LedgerController::class, 'destroyEntry'])->middleware('role:admin,treasurer')->name('ledger.entries.destroy');

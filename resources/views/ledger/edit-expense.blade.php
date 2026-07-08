@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('page-title', 'Edit Expense')
+@section('page-title', 'Edit Disbursement')
 @section('eyebrow', 'Funds')
 
 @section('content')
@@ -8,8 +8,8 @@
     @csrf
     @method('PUT')
     <div class="flex flex-wrap items-end justify-between gap-3">
-        <h2 class="text-lg font-bold text-sky-950">Expense Details</h2>
-        <label class="grid gap-1 text-xs font-semibold uppercase tracking-wide text-slate-500">Expense Date
+        <h2 class="text-lg font-bold text-sky-950">Disbursement Details</h2>
+        <label class="grid gap-1 text-xs font-semibold uppercase tracking-wide text-slate-500">Disbursement Date
             <input name="expense_date" type="date" value="{{ old('expense_date', $expense->expense_date?->format('Y-m-d')) }}" required class="rounded-lg border border-slate-300 px-4 py-3 text-sm normal-case tracking-normal text-slate-900">
         </label>
     </div>
@@ -20,7 +20,7 @@
             @endforeach
         </select>
         <div>
-            <input name="category" list="expense-categories" value="{{ old('category', $expense->category) }}" placeholder="Expense category" required class="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm">
+            <input name="category" list="expense-categories" value="{{ old('category', $expense->category) }}" placeholder="Disbursement category" required class="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm">
             <datalist id="expense-categories">
                 @foreach ($expenseCategories as $category)
                     <option value="{{ $category }}"></option>
@@ -36,7 +36,7 @@
     <div class="mt-5 flex flex-wrap gap-3">
         <button class="inline-flex items-center gap-2 rounded-lg bg-sky-800 px-5 py-3 text-sm font-semibold text-white">
             <x-icon name="save" class="h-4 w-4" />
-            Update Expense
+            Update Disbursement
         </button>
         <a href="{{ route('ledger.index') }}" class="rounded-lg border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-100">Cancel</a>
     </div>

@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Collection;
 use App\Models\Member;
+use App\Models\MonthLock;
+use Carbon\Carbon;
+use DateTimeInterface;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -69,6 +72,7 @@ class CollectionController extends Controller
     {
         $data = $this->validated($request);
         $data['encoded_by'] = $request->user()->id;
+        $this->assertCollectionMonthUnlocked($data['collection_type'], $data['collection_month'] ?? null, $data['collection_date']);
 
         $this->saveCollection(fn () => Collection::create($data));
 
@@ -87,6 +91,8 @@ class CollectionController extends Controller
     public function update(Request $request, Collection $collection): RedirectResponse
     {
         $data = $this->validated($request, $collection);
+        $this->assertCollectionMonthUnlocked($collection->collection_type, $collection->collection_month, $collection->collection_date);
+        $this->assertCollectionMonthUnlocked($data['collection_type'], $data['collection_month'] ?? null, $data['collection_date']);
 
         $this->saveCollection(fn () => $collection->update($data));
 
@@ -95,6 +101,10 @@ class CollectionController extends Controller
 
     public function destroy(Collection $collection): RedirectResponse
     {
+        if ($this->collectionMonthLocked($collection->collection_type, $collection->collection_month, $collection->collection_date)) {
+            return back()->with('error', MonthLock::lockedMessage($collection->collection_type, $this->lockMonthForCollection($collection->collection_type, $collection->collection_month, $collection->collection_date)));
+        }
+
         $collection->delete();
 
         return redirect()->route('collections.index')->with('success', 'Collection entry deleted.');
@@ -153,5 +163,30 @@ class CollectionController extends Controller
 
             throw $exception;
         }
+    }
+
+    private function assertCollectionMonthUnlocked(string $type, ?string $collectionMonth, string|\DateTimeInterface $collectionDate): void
+    {
+        $month = $this->lockMonthForCollection($type, $collectionMonth, $collectionDate);
+
+        if (MonthLock::isLocked($type, $month)) {
+            throw ValidationException::withMessages([
+                'collection_date' => MonthLock::lockedMessage($type, $month),
+            ]);
+        }
+    }
+
+    private function collectionMonthLocked(string $type, ?string $collectionMonth, string|\DateTimeInterface $collectionDate): bool
+    {
+        return MonthLock::isLocked($type, $this->lockMonthForCollection($type, $collectionMonth, $collectionDate));
+    }
+
+    private function lockMonthForCollection(string $type, ?string $collectionMonth, string|\DateTimeInterface $collectionDate): string
+    {
+        if ($type === Collection::BALIK_GASA) {
+            return (string) $collectionMonth;
+        }
+
+        return Carbon::parse($collectionDate)->format('Y-m');
     }
 }

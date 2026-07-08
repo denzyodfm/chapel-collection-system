@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Collection;
 use App\Models\HugpongBanay;
 use App\Models\Member;
+use App\Models\MonthLock;
 use Carbon\Carbon;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
@@ -41,6 +42,7 @@ class BalikGasaController extends Controller
         return view('balik-gasa.index', [
             'month' => $month,
             'monthLabel' => Carbon::createFromFormat('Y-m', $month)->format('F Y'),
+            'monthLock' => MonthLock::where('lockable_type', Collection::BALIK_GASA)->where('month', $month)->first(),
             'balikGasaTotal' => $balikGasaTotal,
             'balikGasaIcpShare' => $balikGasaTotal * 0.60,
             'balikGasaChapelShare' => $balikGasaTotal * 0.40,
@@ -67,6 +69,10 @@ class BalikGasaController extends Controller
             throw ValidationException::withMessages([
                 'member' => 'Only active members can receive quick Balik Gasa payments.',
             ]);
+        }
+
+        if (MonthLock::isLocked(Collection::BALIK_GASA, $data['collection_month'])) {
+            return back()->with('error', MonthLock::lockedMessage(Collection::BALIK_GASA, $data['collection_month']));
         }
 
         $exists = Collection::where('collection_type', Collection::BALIK_GASA)

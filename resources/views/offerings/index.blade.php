@@ -27,20 +27,26 @@
     </article>
 </section>
 
+<x-month-lock-panel :lockable-type="\App\Models\Collection::HALAD" :month="$month" :month-label="$monthLabel" :lock="$monthLock" />
+
 @if (auth()->user()->hasAnyRole(['admin', 'treasurer']))
 <section class="mb-5 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
     <div class="mb-4">
         <h2 class="text-lg font-bold text-sky-950">Post Offering After Mass</h2>
         <p class="text-sm text-slate-500">Offering is recorded as one total collection from all members, not per member.</p>
     </div>
-    <form method="POST" action="{{ route('offerings.quick-post') }}" class="grid gap-3 lg:grid-cols-[180px_160px_1fr_1fr_auto]">
-        @csrf
-        <input name="collection_date" type="date" value="{{ now()->format('Y-m-d') }}" required class="rounded-lg border border-slate-300 px-4 py-3 text-sm">
-        <input name="amount" type="number" min="0.01" step="0.01" placeholder="Offering amount" required class="rounded-lg border border-slate-300 px-4 py-3 text-sm">
-        <input name="reference_no" placeholder="Reference" class="rounded-lg border border-slate-300 px-4 py-3 text-sm">
-        <input name="remarks" placeholder="Offering notes after mass" class="rounded-lg border border-slate-300 px-4 py-3 text-sm">
-        <button class="inline-flex items-center justify-center gap-2 rounded-lg bg-amber-600 px-5 py-3 text-sm font-semibold text-white"><x-icon name="save" class="h-4 w-4" /> Post Offering</button>
-    </form>
+    @if ($monthLock)
+        <p class="rounded-lg bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">This month is locked. No Offering entries can be posted for {{ $monthLabel }}.</p>
+    @else
+        <form method="POST" action="{{ route('offerings.quick-post') }}" class="grid gap-3 lg:grid-cols-[180px_160px_1fr_1fr_auto]">
+            @csrf
+            <input name="collection_date" type="date" value="{{ now()->format('Y-m-d') }}" required class="rounded-lg border border-slate-300 px-4 py-3 text-sm">
+            <input name="amount" type="number" min="0.01" step="0.01" placeholder="Offering amount" required class="rounded-lg border border-slate-300 px-4 py-3 text-sm">
+            <input name="reference_no" placeholder="Reference" class="rounded-lg border border-slate-300 px-4 py-3 text-sm">
+            <input name="remarks" placeholder="Offering notes after mass" class="rounded-lg border border-slate-300 px-4 py-3 text-sm">
+            <button class="inline-flex items-center justify-center gap-2 rounded-lg bg-amber-600 px-5 py-3 text-sm font-semibold text-white"><x-icon name="save" class="h-4 w-4" /> Post Offering</button>
+        </form>
+    @endif
 </section>
 @endif
 
@@ -66,7 +72,9 @@
                         <td class="px-4 py-3">{{ $offering->encoder?->name ?: '-' }}</td>
                         <td class="px-4 py-3 text-right font-semibold">PHP {{ number_format((float) $offering->amount, 2) }}</td>
                         <td class="px-4 py-3 text-right">
-                            @if (auth()->user()->hasAnyRole(['admin', 'treasurer']))
+                            @if ($monthLock)
+                                <span class="text-rose-600">Locked</span>
+                            @elseif (auth()->user()->hasAnyRole(['admin', 'treasurer']))
                                 <a href="{{ route('collections.edit', $offering) }}" class="inline-flex items-center gap-1 font-semibold text-amber-700"><x-icon name="edit" class="h-3.5 w-3.5" /> Edit</a>
                                 <form class="inline" method="POST" action="{{ route('collections.destroy', $offering) }}" onsubmit="return confirm('Delete this offering?')">
                                     @csrf @method('DELETE')

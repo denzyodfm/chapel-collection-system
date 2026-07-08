@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Collection;
 use App\Models\HugpongBanay;
 use App\Models\Member;
+use App\Models\MonthLock;
 use Carbon\Carbon;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
@@ -170,6 +171,10 @@ class MemberController extends Controller
             return back()->with('error', 'Only active members can receive Balik Gasa plot payments.');
         }
 
+        if (MonthLock::isLocked(Collection::BALIK_GASA, $data['collection_month'])) {
+            return back()->with('error', MonthLock::lockedMessage(Collection::BALIK_GASA, $data['collection_month']));
+        }
+
         try {
             Collection::create([
                 'member_id' => $member->id,
@@ -205,6 +210,10 @@ class MemberController extends Controller
         $data = $request->validate([
             'amount' => ['required', 'numeric', 'gt:0', 'max:999999999.99'],
         ]);
+
+        if (MonthLock::isLocked(Collection::BALIK_GASA, $collection->collection_month)) {
+            return back()->with('error', MonthLock::lockedMessage(Collection::BALIK_GASA, $collection->collection_month));
+        }
 
         $collection->update([
             'amount' => $data['amount'],

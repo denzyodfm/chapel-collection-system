@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Collection;
+use App\Models\MonthLock;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -29,6 +30,7 @@ class OfferingController extends Controller
         return view('offerings.index', [
             'month' => $month,
             'monthLabel' => $monthDate->format('F Y'),
+            'monthLock' => MonthLock::where('lockable_type', Collection::HALAD)->where('month', $month)->first(),
             'offerings' => $offerings,
             'totalOffering' => $offerings->sum('amount'),
         ]);
@@ -42,6 +44,11 @@ class OfferingController extends Controller
             'reference_no' => ['nullable', 'string', 'max:100'],
             'remarks' => ['nullable', 'string', 'max:1000'],
         ]);
+
+        $entryMonth = Carbon::parse($data['collection_date'])->format('Y-m');
+        if (MonthLock::isLocked(Collection::HALAD, $entryMonth)) {
+            return back()->with('error', MonthLock::lockedMessage(Collection::HALAD, $entryMonth));
+        }
 
         Collection::create([
             'member_id' => null,

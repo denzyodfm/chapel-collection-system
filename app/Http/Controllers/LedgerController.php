@@ -5,9 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\Collection;
 use App\Models\Expense;
 use App\Models\LedgerEntry;
+use App\Models\MonthLock;
+use Carbon\Carbon;
+use DateTimeInterface;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class LedgerController extends Controller
@@ -32,13 +36,20 @@ class LedgerController extends Controller
     {
         $validated = $request->validate([
             'fund_type' => ['nullable', Rule::in(array_keys(self::FUND_TYPES))],
+            'month' => ['nullable', 'date_format:Y-m'],
             'date_from' => ['nullable', 'date'],
             'date_to' => ['nullable', 'date', 'after_or_equal:date_from'],
         ]);
 
         $fundType = $validated['fund_type'] ?? null;
+        $lockMonth = $validated['month'] ?? now()->format('Y-m');
         $dateFrom = $validated['date_from'] ?? null;
         $dateTo = $validated['date_to'] ?? null;
+        $monthDate = isset($validated['month']) ? Carbon::createFromFormat('Y-m', $validated['month']) : null;
+        if ($monthDate) {
+            $dateFrom ??= $monthDate->copy()->startOfMonth()->toDateString();
+            $dateTo ??= $monthDate->copy()->endOfMonth()->toDateString();
+        }
 
         $collectionRows = Collection::with('member')
             ->includedInTotals()
@@ -85,7 +96,7 @@ class LedgerController extends Controller
                 'row_type' => 'expense',
                 'date' => $expense->expense_date,
                 'fund_type' => $expense->fund_type,
-                'source' => 'Expense',
+                'source' => 'Disbursement',
                 'description' => $expense->pay_to ? "{$expense->category} - {$expense->pay_to}" : $expense->category,
                 'reference_no' => $expense->reference_no,
                 'credit' => 0.0,
@@ -106,6 +117,9 @@ class LedgerController extends Controller
             'fundTypes' => self::FUND_TYPES,
             'fundSummaries' => $fundSummaries,
             'expenseCategories' => self::EXPENSE_CATEGORIES,
+            'lockMonth' => $lockMonth,
+            'lockMonthLabel' => Carbon::createFromFormat('Y-m', $lockMonth)->format('F Y'),
+            'disbursementMonthLock' => MonthLock::where('lockable_type', MonthLock::DISBURSEMENT)->where('month', $lockMonth)->first(),
         ]);
     }
 
@@ -171,10 +185,11 @@ class LedgerController extends Controller
     {
         $data = $this->validatedExpense($request);
         $data['encoded_by'] = $request->user()->id;
+        $this->assertDisbursementMonthUnlocked($data['expense_date']);
 
         Expense::create($data);
 
-        return redirect()->route('ledger.index')->with('success', 'Expense encoded and deducted from chapel funds.');
+        return redirect()->route('ledger.index')->with('success', 'Disbursement encoded and deducted from chapel funds.');
     }
 
     public function editExpense(Expense $expense): View
@@ -188,16 +203,25 @@ class LedgerController extends Controller
 
     public function updateExpense(Request $request, Expense $expense): RedirectResponse
     {
-        $expense->update($this->validatedExpense($request));
+        $data = $this->validatedExpense($request);
+        $this->assertDisbursementMonthUnlocked($expense->expense_date);
+        $this->assertDisbursementMonthUnlocked($data['expense_date']);
 
-        return redirect()->route('ledger.index')->with('success', 'Expense updated.');
+        $expense->update($data);
+
+        return redirect()->route('ledger.index')->with('success', 'Disbursement updated.');
     }
 
     public function destroyExpense(Expense $expense): RedirectResponse
     {
+        $month = $expense->expense_date->format('Y-m');
+        if (MonthLock::isLocked(MonthLock::DISBURSEMENT, $month)) {
+            return back()->with('error', MonthLock::lockedMessage(MonthLock::DISBURSEMENT, $month));
+        }
+
         $expense->delete();
 
-        return redirect()->route('ledger.index')->with('success', 'Expense deleted.');
+        return redirect()->route('ledger.index')->with('success', 'Disbursement deleted.');
     }
 
     private function validatedExpense(Request $request): array
@@ -211,5 +235,16 @@ class LedgerController extends Controller
             'reference_no' => ['nullable', 'string', 'max:100'],
             'remarks' => ['nullable', 'string', 'max:1000'],
         ]);
+    }
+
+    private function assertDisbursementMonthUnlocked(string|\DateTimeInterface $date): void
+    {
+        $month = Carbon::parse($date)->format('Y-m');
+
+        if (MonthLock::isLocked(MonthLock::DISBURSEMENT, $month)) {
+            throw ValidationException::withMessages([
+                'expense_date' => MonthLock::lockedMessage(MonthLock::DISBURSEMENT, $month),
+            ]);
+        }
     }
 }

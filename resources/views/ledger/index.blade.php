@@ -14,6 +14,10 @@
     @endforeach
 </section>
 
+<div class="mt-6">
+    <x-month-lock-panel :lockable-type="\App\Models\MonthLock::DISBURSEMENT" :month="$lockMonth" :month-label="$lockMonthLabel" :lock="$disbursementMonthLock" />
+</div>
+
 @if (auth()->user()->hasAnyRole(['admin', 'treasurer']))
 <section class="mt-6 grid gap-6 xl:grid-cols-2">
     <form method="POST" action="{{ route('ledger.entries.store') }}" class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
@@ -43,11 +47,14 @@
     <form method="POST" action="{{ route('ledger.expenses.store') }}" class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
         @csrf
         <div class="flex flex-wrap items-end justify-between gap-3">
-            <h2 class="text-lg font-bold text-sky-950">Encode Expense</h2>
-            <label class="grid gap-1 text-xs font-semibold uppercase tracking-wide text-slate-500">Expense Date
+            <h2 class="text-lg font-bold text-sky-950">Encode Disbursement</h2>
+            <label class="grid gap-1 text-xs font-semibold uppercase tracking-wide text-slate-500">Disbursement Date
                 <input name="expense_date" type="date" value="{{ now()->format('Y-m-d') }}" required class="rounded-lg border border-slate-300 px-4 py-3 text-sm normal-case tracking-normal text-slate-900">
             </label>
         </div>
+        @if ($disbursementMonthLock)
+            <p class="mt-4 rounded-lg bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">Disbursements for {{ $lockMonthLabel }} are locked. No disbursement can be encoded for this month.</p>
+        @else
         <div class="mt-4 grid gap-4 md:grid-cols-2">
             <select name="fund_type" required class="rounded-lg border border-slate-300 px-4 py-3 text-sm">
                 @foreach ($fundTypes as $value => $label)
@@ -55,7 +62,7 @@
                 @endforeach
             </select>
             <div>
-                <input name="category" list="expense-categories" placeholder="Expense category" required class="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm">
+                <input name="category" list="expense-categories" placeholder="Disbursement category" required class="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm">
                 <datalist id="expense-categories">
                     @foreach ($expenseCategories as $category)
                         <option value="{{ $category }}"></option>
@@ -70,19 +77,21 @@
         </div>
         <button class="mt-4 inline-flex items-center gap-2 rounded-lg bg-rose-700 px-5 py-3 text-sm font-semibold text-white">
             <x-icon name="save" class="h-4 w-4" />
-            Save Expense
+            Save Disbursement
         </button>
+        @endif
     </form>
 </section>
 @endif
 
-<form method="GET" class="mt-6 grid gap-3 rounded-lg border border-slate-200 bg-white p-4 shadow-sm md:grid-cols-4">
+<form method="GET" class="mt-6 grid gap-3 rounded-lg border border-slate-200 bg-white p-4 shadow-sm md:grid-cols-5">
     <select name="fund_type" class="rounded-lg border border-slate-300 px-4 py-3 text-sm">
         <option value="">All funds</option>
         @foreach ($fundTypes as $value => $label)
             <option value="{{ $value }}" @selected(request('fund_type') === $value)>{{ $label }}</option>
         @endforeach
     </select>
+    <input name="month" type="month" value="{{ request('month', $lockMonth) }}" class="rounded-lg border border-slate-300 px-4 py-3 text-sm">
     <input name="date_from" type="date" value="{{ request('date_from') }}" class="rounded-lg border border-slate-300 px-4 py-3 text-sm">
     <input name="date_to" type="date" value="{{ request('date_to') }}" class="rounded-lg border border-slate-300 px-4 py-3 text-sm">
     <button class="inline-flex items-center justify-center gap-2 rounded-lg bg-slate-800 px-5 py-3 text-sm font-semibold text-white">
@@ -114,7 +123,7 @@
                                 </form>
                             @elseif (($row['row_type'] ?? null) === 'expense' && auth()->user()->hasAnyRole(['admin', 'treasurer']))
                                 <a href="{{ route('ledger.expenses.edit', $row['id']) }}" class="inline-flex items-center gap-1 font-semibold text-amber-700"><x-icon name="edit" class="h-3.5 w-3.5" /> Edit</a>
-                                <form class="inline" method="POST" action="{{ route('ledger.expenses.destroy', $row['id']) }}" onsubmit="return confirm('Delete this expense?')">
+                                <form class="inline" method="POST" action="{{ route('ledger.expenses.destroy', $row['id']) }}" onsubmit="return confirm('Delete this disbursement?')">
                                     @csrf @method('DELETE')
                                     <button class="ml-3 inline-flex items-center gap-1 font-semibold text-rose-700"><x-icon name="trash" class="h-3.5 w-3.5" /> Delete</button>
                                 </form>

@@ -20,6 +20,8 @@
     <button class="inline-flex items-center justify-center gap-2 rounded-lg bg-sky-800 px-5 py-3 text-sm font-semibold text-white"><x-icon name="filter" class="h-4 w-4" /> View Month</button>
 </form>
 
+<x-month-lock-panel :lockable-type="\App\Models\Collection::DONATION" :month="$month" :month-label="$monthLabel" :lock="$monthLock" />
+
 <section class="mb-5 grid gap-4 lg:grid-cols-[1fr_280px]">
     <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
         <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
@@ -74,7 +76,9 @@
                         <td class="px-4 py-3">{{ $summary['count'] ?? 0 }}</td>
                         <td class="px-4 py-3">{{ data_get($summary, 'last_date')?->format('M d, Y') ?: '-' }}</td>
                         <td class="px-4 py-3">
-                            @if (auth()->user()->hasAnyRole(['admin', 'treasurer']))
+                            @if ($monthLock)
+                                <span class="rounded-lg bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700">Month locked</span>
+                            @elseif (auth()->user()->hasAnyRole(['admin', 'treasurer']))
                                 <form method="POST" action="{{ route('donations.quick-pay', $member) }}" class="grid min-w-96 gap-2">
                                     @csrf
                                     <input type="hidden" name="collection_month" value="{{ $month }}">
@@ -115,7 +119,9 @@
                         <td class="px-4 py-3">{{ $donation->remarks ?: '-' }}</td>
                         <td class="px-4 py-3 text-right font-semibold">PHP {{ number_format((float) $donation->amount, 2) }}</td>
                         <td class="px-4 py-3 text-right">
-                            @if (auth()->user()->hasAnyRole(['admin', 'treasurer']))
+                            @if ($monthLock)
+                                <span class="text-rose-600">Locked</span>
+                            @elseif (auth()->user()->hasAnyRole(['admin', 'treasurer']))
                                 <a href="{{ route('collections.edit', $donation) }}" class="inline-flex items-center gap-1 font-semibold text-amber-700"><x-icon name="edit" class="h-3.5 w-3.5" /> Edit</a>
                                 <form class="inline" method="POST" action="{{ route('collections.destroy', $donation) }}" onsubmit="return confirm('Delete this donation?')">
                                     @csrf @method('DELETE')

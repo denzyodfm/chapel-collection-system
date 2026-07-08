@@ -15,9 +15,10 @@ A modern Laravel + MySQL web app for recording and monitoring chapel collections
 - Click a member ID to open a yearly Balik Gasa payment plot with previous/next year navigation.
 - Quick monthly Donation posting from the Balik Gasa monitoring page.
 - Quick Offering posting after mass as a total collection from all members.
-- References and notes on collections, ledger entries, and expenses.
+- References and notes on collections, ledger entries, and disbursements.
 - Ledger for Balik Gasa, Donation, Offering, and General Chapel Fund.
-- Expense encoding deducts from chapel fund balances.
+- Disbursement encoding deducts from chapel fund balances.
+- Month locks can close Balik Gasa, Donation, Offering, and Disbursement records; admins can unlock closed months.
 - Reports for monthly collections, member history, overall summary, print view, and CSV export.
 - User accounts with roles:
   - **Admin**: full access.
@@ -144,7 +145,7 @@ Stores manual fund movements such as beginning balances and other sources:
 
 ### `expenses`
 
-Stores chapel expenses that deduct from fund balances:
+Stores chapel disbursements that deduct from fund balances:
 
 - `fund_type`
 - `category`
@@ -152,6 +153,16 @@ Stores chapel expenses that deduct from fund balances:
 - `expense_date`
 - `reference_no`
 - `remarks`
+
+### `month_locks`
+
+Stores closed months for each record type:
+
+- `lockable_type`: `balik_gasa`, `donation`, `halad`, or `disbursement`
+- `month` in `YYYY-MM` format
+- `locked_by` references `users.id`
+
+When a month is locked, records in that month cannot be added, edited, or deleted until an admin unlocks it.
 
 ## Page Descriptions
 
@@ -162,7 +173,7 @@ Stores chapel expenses that deduct from fund balances:
 - **Collections**: entry list with filters, add/edit/delete forms, conditional month field for Balik Gasa.
 - **Balik Gasa Monitoring**: month selector, Hugpong Banay buttons, all active members, paid/unpaid status, amount, payment date, quick Balik Gasa payment, quick Donation, Offering posting, and member yearly payment plot.
 - **Reports**: monthly table, member history, summary totals, grand total, CSV export, and print button.
-- **Ledger**: fund balances, manual entries for beginning balance/other source, expense posting, and transaction ledger.
+- **Ledger**: fund balances, manual entries for beginning balance/other source, disbursement posting, month lock, and transaction ledger.
 - **User Accounts**: admin-only role and account management.
 
 ## Notes

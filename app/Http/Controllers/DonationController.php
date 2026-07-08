@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Collection;
 use App\Models\HugpongBanay;
 use App\Models\Member;
+use App\Models\MonthLock;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -48,6 +49,7 @@ class DonationController extends Controller
         return view('donations.index', [
             'month' => $month,
             'monthLabel' => $monthDate->format('F Y'),
+            'monthLock' => MonthLock::where('lockable_type', Collection::DONATION)->where('month', $month)->first(),
             'hugpongBanays' => HugpongBanay::withCount(['members' => fn ($query) => $query->where('status', 'active')])
                 ->where('status', 'active')
                 ->orderBy('name')
@@ -70,6 +72,11 @@ class DonationController extends Controller
             'reference_no' => ['nullable', 'string', 'max:100'],
             'remarks' => ['nullable', 'string', 'max:1000'],
         ]);
+
+        $entryMonth = Carbon::parse($data['collection_date'] ?? now())->format('Y-m');
+        if (MonthLock::isLocked(Collection::DONATION, $entryMonth)) {
+            return back()->with('error', MonthLock::lockedMessage(Collection::DONATION, $entryMonth));
+        }
 
         Collection::create([
             'member_id' => $member->id,

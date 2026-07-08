@@ -91,7 +91,7 @@
 <section class="mt-6 grid gap-6 xl:grid-cols-[1fr_1.35fr]">
     <article class="flex min-h-[20rem] flex-col rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
         <div class="flex items-center justify-between gap-4">
-            <h2 class="text-lg font-bold text-sky-950">Recent Expenses</h2>
+            <h2 class="text-lg font-bold text-sky-950">Recent Disbursements</h2>
             <a href="{{ route('ledger.index') }}" class="text-sm font-semibold text-sky-700">Open ledger</a>
         </div>
         <div class="mt-4 max-h-72 flex-1 divide-y divide-slate-100 overflow-y-auto pr-2">
@@ -109,7 +109,7 @@
                     <p class="text-right font-bold text-rose-700">PHP {{ number_format((float) $expense->amount, 2) }}</p>
                 </div>
             @empty
-                <p class="py-6 text-sm text-slate-500">No expenses recorded yet.</p>
+                <p class="py-6 text-sm text-slate-500">No disbursements recorded yet.</p>
             @endforelse
         </div>
     </article>
