@@ -19,10 +19,12 @@ class ReportController extends Controller
         $validated = $request->validate([
             'month' => ['nullable', 'date_format:Y-m'],
             'member_id' => ['nullable', 'exists:members,id'],
+            'statement_basis' => ['nullable', Rule::in(['as_of', 'monthly'])],
         ]);
 
         $month = $validated['month'] ?? now()->format('Y-m');
         $memberId = $validated['member_id'] ?? null;
+        $statementBasis = $validated['statement_basis'] ?? 'as_of';
 
         $monthly = $this->monthlyQuery($month)
             ->with('member')
@@ -35,7 +37,7 @@ class ReportController extends Controller
             ->pluck('total', 'collection_type');
         $balikGasaShares = $this->balikGasaSharesByHugpongBanay($month);
         $balikGasaSubsummary = $this->balikGasaSubsummaryByHugpongBanay($month);
-        $financialStatements = $this->financialStatements($month);
+        $financialStatements = $this->financialStatements($month, $statementBasis);
 
         $memberHistory = collect();
         if ($memberId) {
@@ -233,9 +235,12 @@ class ReportController extends Controller
         ];
     }
 
-    private function financialStatements(string $month): array
+    private function financialStatements(string $month, string $basis = 'as_of'): array
     {
-        $periodEnd = Carbon::createFromFormat('Y-m', $month)->endOfMonth();
+        $monthDate = Carbon::createFromFormat('Y-m', $month);
+        $periodStart = $monthDate->copy()->startOfMonth();
+        $periodEnd = $monthDate->copy()->endOfMonth();
+        $isMonthly = $basis === 'monthly';
         $fundTypes = [
             Collection::BALIK_GASA => 'Balik Gasa Fund',
             Collection::DONATION => 'Donation Fund',
@@ -243,32 +248,90 @@ class ReportController extends Controller
             'general' => 'General Chapel Fund Adjustments',
         ];
 
-        $collectionCredits = Collection::query()
+        $collectionRows = Collection::with('member')
             ->includedInTotals()
-            ->whereDate('collection_date', '<=', $periodEnd->toDateString())
-            ->selectRaw('collection_type, SUM(amount) as total')
+            ->when($isMonthly, function ($query) use ($month, $periodStart, $periodEnd) {
+                $query->where(function ($query) use ($month, $periodStart, $periodEnd) {
+                    $query->where(function ($query) use ($month) {
+                        $query->where('collection_type', Collection::BALIK_GASA)
+                            ->where('collection_month', $month);
+                    })->orWhere(function ($query) use ($periodStart, $periodEnd) {
+                        $query->whereIn('collection_type', [Collection::DONATION, Collection::HALAD])
+                            ->whereBetween('collection_date', [$periodStart->toDateString(), $periodEnd->toDateString()]);
+                    });
+                });
+            }, fn ($query) => $query->whereDate('collection_date', '<=', $periodEnd->toDateString()))
+            ->orderBy('collection_date')
+            ->get();
+
+        $collectionCredits = $collectionRows
             ->groupBy('collection_type')
-            ->pluck('total', 'collection_type');
+            ->map(fn ($rows) => $rows->sum('amount'));
 
-        $manualCredits = LedgerEntry::query()
-            ->whereDate('entry_date', '<=', $periodEnd->toDateString())
-            ->where('entry_type', LedgerEntry::CREDIT)
-            ->selectRaw('fund_type, SUM(amount) as total')
-            ->groupBy('fund_type')
-            ->pluck('total', 'fund_type');
+        $ledgerRows = LedgerEntry::query()
+            ->when($isMonthly, fn ($query) => $query->whereBetween('entry_date', [$periodStart->toDateString(), $periodEnd->toDateString()]), fn ($query) => $query->whereDate('entry_date', '<=', $periodEnd->toDateString()))
+            ->orderBy('entry_date')
+            ->get();
 
-        $manualDebits = LedgerEntry::query()
-            ->whereDate('entry_date', '<=', $periodEnd->toDateString())
-            ->where('entry_type', LedgerEntry::DEBIT)
-            ->selectRaw('fund_type, SUM(amount) as total')
-            ->groupBy('fund_type')
-            ->pluck('total', 'fund_type');
+        $manualCreditRows = $ledgerRows->where('entry_type', LedgerEntry::CREDIT);
+        $manualDebitRows = $ledgerRows->where('entry_type', LedgerEntry::DEBIT);
 
-        $disbursements = Expense::query()
-            ->whereDate('expense_date', '<=', $periodEnd->toDateString())
-            ->selectRaw('fund_type, SUM(amount) as total')
+        $manualCredits = $manualCreditRows
             ->groupBy('fund_type')
-            ->pluck('total', 'fund_type');
+            ->map(fn ($rows) => $rows->sum('amount'));
+
+        $manualDebits = $manualDebitRows
+            ->groupBy('fund_type')
+            ->map(fn ($rows) => $rows->sum('amount'));
+
+        $disbursementRows = Expense::query()
+            ->when($isMonthly, fn ($query) => $query->whereBetween('expense_date', [$periodStart->toDateString(), $periodEnd->toDateString()]), fn ($query) => $query->whereDate('expense_date', '<=', $periodEnd->toDateString()))
+            ->orderBy('expense_date')
+            ->get();
+
+        $disbursements = $disbursementRows
+            ->groupBy('fund_type')
+            ->map(fn ($rows) => $rows->sum('amount'));
+
+        $details = collect()
+            ->concat($collectionRows->map(fn (Collection $collection) => [
+                'date' => $collection->collection_date,
+                'fund' => Collection::TYPES[$collection->collection_type] ?? $collection->collection_type,
+                'source' => 'Collection',
+                'description' => $collection->member?->full_name ?: 'All members / Mass collection',
+                'reference' => $collection->reference_no ?: '-',
+                'debit' => 0.0,
+                'credit' => (float) $collection->amount,
+            ]))
+            ->concat($manualCreditRows->map(fn (LedgerEntry $entry) => [
+                'date' => $entry->entry_date,
+                'fund' => $fundTypes[$entry->fund_type] ?? $entry->fund_type,
+                'source' => 'Manual Credit',
+                'description' => $entry->remarks ?: 'Manual ledger entry',
+                'reference' => $entry->reference_no ?: '-',
+                'debit' => 0.0,
+                'credit' => (float) $entry->amount,
+            ]))
+            ->concat($manualDebitRows->map(fn (LedgerEntry $entry) => [
+                'date' => $entry->entry_date,
+                'fund' => $fundTypes[$entry->fund_type] ?? $entry->fund_type,
+                'source' => 'Manual Debit',
+                'description' => $entry->remarks ?: 'Manual ledger entry',
+                'reference' => $entry->reference_no ?: '-',
+                'debit' => (float) $entry->amount,
+                'credit' => 0.0,
+            ]))
+            ->concat($disbursementRows->map(fn (Expense $expense) => [
+                'date' => $expense->expense_date,
+                'fund' => $fundTypes[$expense->fund_type] ?? $expense->fund_type,
+                'source' => 'Disbursement',
+                'description' => $expense->pay_to ? "{$expense->category} - {$expense->pay_to}" : $expense->category,
+                'reference' => $expense->reference_no ?: '-',
+                'debit' => (float) $expense->amount,
+                'credit' => 0.0,
+            ]))
+            ->sortBy(fn ($row) => $row['date']?->format('Y-m-d').$row['source'])
+            ->values();
 
         $fundRows = collect($fundTypes)->map(function (string $label, string $type) use ($collectionCredits, $manualCredits, $manualDebits, $disbursements) {
             $credits = (float) ($manualCredits[$type] ?? 0);
@@ -299,8 +362,14 @@ class ReportController extends Controller
 
         return [
             'period_end' => $periodEnd,
+            'period_start' => $periodStart,
+            'basis' => $basis,
+            'basis_label' => $isMonthly
+                ? 'For '.$periodStart->format('F Y')
+                : 'As of '.$periodEnd->format('F d, Y'),
             'fund_rows' => $fundRows,
             'trial_rows' => $trialRows,
+            'details' => $details,
             'trial_totals' => [
                 'debit' => collect($trialRows)->sum('debit'),
                 'credit' => collect($trialRows)->sum('credit'),

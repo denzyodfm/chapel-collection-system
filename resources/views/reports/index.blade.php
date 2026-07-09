@@ -10,8 +10,12 @@
 @endsection
 
 @section('content')
-<form method="GET" class="mb-5 grid gap-3 rounded-lg border border-slate-200 bg-white p-4 shadow-sm lg:grid-cols-[220px_1fr_auto_minmax(280px,360px)] print:hidden">
+<form method="GET" class="mb-5 grid gap-3 rounded-lg border border-slate-200 bg-white p-4 shadow-sm lg:grid-cols-[190px_220px_1fr_auto] xl:grid-cols-[190px_240px_1fr_auto_minmax(280px,360px)] print:hidden">
     <input name="month" type="month" value="{{ $month }}" class="rounded-lg border border-slate-300 px-4 py-3 text-sm">
+    <select name="statement_basis" class="rounded-lg border border-slate-300 px-4 py-3 text-sm">
+        <option value="as_of" @selected(($financialStatements['basis'] ?? 'as_of') === 'as_of')>Statements: As of month end</option>
+        <option value="monthly" @selected(($financialStatements['basis'] ?? 'as_of') === 'monthly')>Statements: Selected month only</option>
+    </select>
     <div class="grid gap-2">
         <input type="search" data-member-filter-target="report-member-select" placeholder="Search member for history report" class="rounded-lg border border-slate-300 px-4 py-3 text-sm">
         <select id="report-member-select" name="member_id" class="rounded-lg border border-slate-300 px-4 py-3 text-sm">
@@ -22,7 +26,7 @@
         </select>
     </div>
     <button class="rounded-lg bg-slate-800 px-5 py-3 text-sm font-semibold text-white">Generate</button>
-    <div class="grid gap-1 rounded-lg bg-sky-50 px-4 py-3 text-sm">
+    <div class="grid gap-1 rounded-lg bg-sky-50 px-4 py-3 text-sm lg:col-span-4 xl:col-span-1">
         <p class="font-semibold text-sky-950">Balik Gasa: PHP {{ number_format((float) $balikGasaShares['grand']['total'], 2) }}</p>
         <p class="text-xs font-medium text-slate-600">ICP 60%: PHP {{ number_format((float) $balikGasaShares['grand']['icp_share'], 2) }}</p>
         <p class="text-xs font-medium text-slate-600">Chapel 40%: PHP {{ number_format((float) $balikGasaShares['grand']['chapel_share'], 2) }}</p>
@@ -49,9 +53,11 @@
         <div class="flex flex-wrap items-start justify-between gap-3">
             <div>
                 <h2 class="text-lg font-bold text-sky-950">Trial Balance</h2>
-                <p class="text-sm text-slate-500">As of {{ $financialStatements['period_end']->format('F d, Y') }}</p>
+                <p class="text-sm text-slate-500">{{ $financialStatements['basis_label'] }}</p>
             </div>
-            <span class="rounded-lg bg-sky-50 px-3 py-2 text-xs font-semibold text-sky-800">Fund accounting view</span>
+            <span class="rounded-lg bg-sky-50 px-3 py-2 text-xs font-semibold text-sky-800">
+                {{ $financialStatements['basis'] === 'monthly' ? 'Selected month view' : 'Fund accounting view' }}
+            </span>
         </div>
         <div class="mt-4 overflow-x-auto">
             <table class="min-w-full text-left text-sm">
@@ -80,7 +86,7 @@
         <div class="flex flex-wrap items-start justify-between gap-3">
             <div>
                 <h2 class="text-lg font-bold text-sky-950">Balance Sheet / Fund Position</h2>
-                <p class="text-sm text-slate-500">Simple chapel fund position as of {{ $financialStatements['period_end']->format('F d, Y') }}</p>
+                <p class="text-sm text-slate-500">Simple chapel fund position - {{ $financialStatements['basis_label'] }}</p>
             </div>
             <span class="rounded-lg bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800">No liabilities recorded</span>
         </div>
@@ -119,6 +125,44 @@
         </div>
     </article>
 </section>
+
+<details class="mt-6 rounded-lg border border-slate-200 bg-white p-5 shadow-sm print:hidden">
+    <summary class="cursor-pointer list-none">
+        <span class="inline-flex rounded-lg bg-sky-800 px-5 py-3 text-sm font-semibold text-white hover:bg-sky-900">Show Statement Details</span>
+        <span class="ml-3 text-sm font-medium text-slate-500">{{ $financialStatements['basis_label'] }}</span>
+    </summary>
+
+    <div class="mt-5 overflow-x-auto">
+        <table class="min-w-full text-left text-sm">
+            <thead class="bg-slate-50 text-xs uppercase text-slate-500">
+                <tr>
+                    <th class="px-3 py-3">Date</th>
+                    <th class="px-3 py-3">Fund</th>
+                    <th class="px-3 py-3">Source</th>
+                    <th class="px-3 py-3">Description</th>
+                    <th class="px-3 py-3">Reference</th>
+                    <th class="px-3 py-3 text-right">Debit</th>
+                    <th class="px-3 py-3 text-right">Credit</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                @forelse ($financialStatements['details'] as $detail)
+                    <tr>
+                        <td class="px-3 py-3">{{ $detail['date']?->format('M d, Y') }}</td>
+                        <td class="px-3 py-3 font-medium">{{ $detail['fund'] }}</td>
+                        <td class="px-3 py-3">{{ $detail['source'] }}</td>
+                        <td class="px-3 py-3">{{ $detail['description'] }}</td>
+                        <td class="px-3 py-3">{{ $detail['reference'] }}</td>
+                        <td class="px-3 py-3 text-right font-semibold">{{ $detail['debit'] > 0 ? 'PHP '.number_format((float) $detail['debit'], 2) : '-' }}</td>
+                        <td class="px-3 py-3 text-right font-semibold">{{ $detail['credit'] > 0 ? 'PHP '.number_format((float) $detail['credit'], 2) : '-' }}</td>
+                    </tr>
+                @empty
+                    <tr><td colspan="7" class="px-3 py-6 text-center text-slate-500">No statement details for this period.</td></tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+</details>
 
 <section class="mt-6 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
     <div class="flex flex-wrap items-center justify-between gap-3">

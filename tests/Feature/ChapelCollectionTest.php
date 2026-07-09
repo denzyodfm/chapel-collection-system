@@ -1043,13 +1043,65 @@ class ChapelCollectionTest extends TestCase
             ->assertOk()
             ->assertSee('Trial Balance')
             ->assertSee('Balance Sheet / Fund Position')
+            ->assertSee('Statements: As of month end')
+            ->assertSee('Show Statement Details')
             ->assertSee('Cash / Chapel Funds')
             ->assertSee('Collections and Other Sources')
             ->assertSee('Disbursements and Fund Deductions')
+            ->assertSee('Financial Report Member')
+            ->assertSee('Maintenance')
             ->assertSee('PHP 750.00')
             ->assertSee('PHP 1,000.00')
             ->assertSee('General Chapel Fund Adjustments')
             ->assertSee('Total Chapel Fund');
+    }
+
+    public function test_reports_financial_statements_can_use_selected_month_only(): void
+    {
+        $viewer = User::factory()->create(['role' => 'viewer']);
+        $member = Member::create([
+            'full_name' => 'Monthly Basis Member',
+            'status' => 'active',
+        ]);
+
+        Collection::create([
+            'member_id' => $member->id,
+            'collection_type' => Collection::BALIK_GASA,
+            'amount' => 777,
+            'collection_date' => '2026-05-25',
+            'collection_month' => '2026-05',
+        ]);
+        Collection::create([
+            'member_id' => $member->id,
+            'collection_type' => Collection::BALIK_GASA,
+            'amount' => 123,
+            'collection_date' => '2026-06-28',
+            'collection_month' => '2026-06',
+        ]);
+
+        LedgerEntry::create([
+            'fund_type' => Collection::DONATION,
+            'entry_type' => LedgerEntry::CREDIT,
+            'amount' => 444,
+            'entry_date' => '2026-05-01',
+        ]);
+        Expense::create([
+            'fund_type' => Collection::BALIK_GASA,
+            'category' => 'Maintenance',
+            'amount' => 23,
+            'expense_date' => '2026-06-20',
+        ]);
+
+        $this->actingAs($viewer)
+            ->get(route('reports.index', ['month' => '2026-06', 'statement_basis' => 'monthly']))
+            ->assertOk()
+            ->assertSee('Statements: Selected month only')
+            ->assertSee('For June 2026')
+            ->assertSee('Selected month view')
+            ->assertSee('PHP 123.00')
+            ->assertSee('PHP 23.00')
+            ->assertDontSee('PHP 777.00')
+            ->assertDontSee('PHP 444.00');
     }
 
     public function test_monthly_report_shows_balik_gasa_share_by_hugpong_banay(): void
