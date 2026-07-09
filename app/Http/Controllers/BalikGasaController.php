@@ -30,11 +30,17 @@ class BalikGasaController extends Controller
             ->orderBy('full_name')
             ->get();
 
+        $monthLock = MonthLock::where('lockable_type', Collection::BALIK_GASA)->where('month', $month)->first();
+        $activeMembersCount = $members->count();
+
         $payments = Collection::where('collection_type', Collection::BALIK_GASA)
             ->where('collection_month', $month)
             ->whereIn('member_id', $members->pluck('id'))
             ->get()
             ->keyBy('member_id');
+        $displayMembers = $monthLock
+            ? $members->filter(fn (Member $member) => $payments->has($member->id))->values()
+            : $members;
         $balikGasaTotal = $payments
             ->filter(fn (Collection $payment) => ! $payment->excluded_from_totals)
             ->sum(fn (Collection $payment) => (float) $payment->amount);
@@ -42,17 +48,18 @@ class BalikGasaController extends Controller
         return view('balik-gasa.index', [
             'month' => $month,
             'monthLabel' => Carbon::createFromFormat('Y-m', $month)->format('F Y'),
-            'monthLock' => MonthLock::where('lockable_type', Collection::BALIK_GASA)->where('month', $month)->first(),
+            'monthLock' => $monthLock,
             'balikGasaTotal' => $balikGasaTotal,
             'balikGasaIcpShare' => $balikGasaTotal * 0.60,
             'balikGasaChapelShare' => $balikGasaTotal * 0.40,
+            'activeMembersCount' => $activeMembersCount,
             'hugpongBanays' => HugpongBanay::withCount(['members' => fn ($query) => $query->where('status', 'active')])
                 ->where('status', 'active')
                 ->orderBy('name')
                 ->get(),
             'selectedHugpongBanayId' => $selectedHugpongBanayId,
             'selectedHugpongBanay' => $selectedHugpongBanayId ? HugpongBanay::find($selectedHugpongBanayId) : null,
-            'members' => $members,
+            'members' => $displayMembers,
             'payments' => $payments,
         ]);
     }

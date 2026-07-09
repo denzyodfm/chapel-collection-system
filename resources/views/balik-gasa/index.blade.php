@@ -50,7 +50,7 @@
             <p class="text-sm text-slate-600">{{ $monthLabel }}</p>
         </div>
         <div class="grid gap-1 text-right text-sm">
-            <p class="font-semibold text-slate-600">{{ $payments->count() }} paid / {{ $members->count() }} active members</p>
+            <p class="font-semibold text-slate-600">{{ $payments->count() }} paid / {{ $activeMembersCount }} active members</p>
             <p class="font-bold text-sky-950">Balik Gasa PHP {{ number_format((float) $balikGasaTotal, 2) }}</p>
             <p class="text-xs font-semibold text-slate-600">ICP 60% PHP {{ number_format((float) $balikGasaIcpShare, 2) }} / Chapel 40% PHP {{ number_format((float) $balikGasaChapelShare, 2) }}</p>
         </div>
@@ -68,7 +68,7 @@
                         <td class="px-4 py-3">{{ $payment?->collection_date?->format('M d, Y') ?: '-' }}</td>
                         <td class="px-4 py-3">
                             @if ($monthLock)
-                                <span class="rounded-lg bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700">Month locked</span>
+                                <span class="inline-flex items-center justify-center rounded-lg bg-rose-50 px-3 py-2 text-rose-700" title="Month locked" aria-label="Month locked"><x-icon name="lock" class="h-4 w-4" /></span>
                             @elseif (! $payment && auth()->user()->hasAnyRole(['admin', 'treasurer']))
                                 <form method="POST" action="{{ route('balik-gasa.quick-pay', $member) }}" class="flex min-w-[22rem] flex-wrap gap-2">
                                     @csrf
@@ -85,7 +85,7 @@
                         </td>
                         <td class="px-4 py-3 text-right">
                             @if ($monthLock)
-                                <span class="text-rose-600">Locked</span>
+                                <span class="inline-flex justify-end text-rose-600" title="Month locked" aria-label="Month locked"><x-icon name="lock" class="h-4 w-4" /></span>
                             @elseif ($payment && auth()->user()->hasAnyRole(['admin', 'treasurer']))
                                 <a href="{{ route('collections.edit', $payment) }}" class="inline-flex items-center gap-1 font-semibold text-amber-700"><x-icon name="edit" class="h-3.5 w-3.5" /> Edit</a>
                                 <form class="inline" method="POST" action="{{ route('collections.destroy', $payment) }}" onsubmit="return confirm('Delete this Balik Gasa payment?')">
@@ -98,7 +98,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="6" class="px-4 py-8 text-center text-slate-500">No active members found for this Hugpong Banay.</td></tr>
+                    <tr><td colspan="6" class="px-4 py-8 text-center text-slate-500">{{ $monthLock ? 'No paid members found for this locked month.' : 'No active members found for this Hugpong Banay.' }}</td></tr>
                 @endforelse
             </tbody>
         </table>

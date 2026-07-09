@@ -346,6 +346,41 @@ class ChapelCollectionTest extends TestCase
             ->assertDontSee('Other Member');
     }
 
+    public function test_locked_balik_gasa_month_shows_only_paid_members(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $paidMember = Member::create([
+            'full_name' => 'Paid Locked Member',
+            'status' => 'active',
+        ]);
+        Member::create([
+            'full_name' => 'Unpaid Locked Member',
+            'status' => 'active',
+        ]);
+
+        Collection::create([
+            'member_id' => $paidMember->id,
+            'collection_type' => Collection::BALIK_GASA,
+            'amount' => 100,
+            'collection_date' => '2026-06-01',
+            'collection_month' => '2026-06',
+        ]);
+        MonthLock::create([
+            'lockable_type' => Collection::BALIK_GASA,
+            'month' => '2026-06',
+            'locked_by' => $admin->id,
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('balik-gasa.index', ['month' => '2026-06']))
+            ->assertOk()
+            ->assertSee('Paid Locked Member')
+            ->assertSee('1 paid / 2 active members')
+            ->assertDontSee('Unpaid Locked Member')
+            ->assertDontSee('Month locked</span>', false)
+            ->assertDontSee('>Locked</span>', false);
+    }
+
     public function test_donation_and_offering_have_separate_monitoring_pages(): void
     {
         $treasurer = User::factory()->create(['role' => 'treasurer']);
