@@ -135,7 +135,7 @@
                 <div class="flex flex-wrap items-center justify-between gap-3 bg-sky-50 px-4 py-3">
                     <div>
                         <h3 class="font-bold text-sky-950">{{ $group['name'] }}</h3>
-                        <p class="text-xs font-medium text-slate-500">{{ $group['members_paid'] }} paid members</p>
+                        <p class="text-xs font-medium text-slate-500">{{ $group['members_paid'] }} contributors</p>
                     </div>
                     <div class="text-right text-sm">
                         <p class="font-bold text-sky-950">Subtotal PHP {{ number_format((float) $group['total'], 2) }}</p>
@@ -168,7 +168,7 @@
 
     <div class="mt-4 grid gap-3 rounded-lg bg-slate-50 p-4 text-sm sm:grid-cols-4">
         <div>
-            <p class="text-xs font-semibold uppercase text-slate-500">Paid Members</p>
+            <p class="text-xs font-semibold uppercase text-slate-500">Contributors</p>
             <p class="mt-1 text-lg font-bold text-sky-950">{{ $balikGasaSubsummary['grand']['members_paid'] }}</p>
         </div>
         <div>
@@ -199,7 +199,7 @@
     <div class="mt-4 overflow-x-auto">
         <table class="min-w-full text-left text-sm">
             <thead class="bg-slate-50 text-xs uppercase text-slate-500">
-                <tr><th class="px-3 py-3">Hugpong Banay</th><th class="px-3 py-3 text-right">Paid Members</th><th class="px-3 py-3 text-right">Balik Gasa Total</th><th class="px-3 py-3 text-right">ICP 60%</th><th class="px-3 py-3 text-right">Chapel 40%</th></tr>
+                <tr><th class="px-3 py-3">Hugpong Banay</th><th class="px-3 py-3 text-right">Contributors</th><th class="px-3 py-3 text-right">Balik Gasa Total</th><th class="px-3 py-3 text-right">ICP 60%</th><th class="px-3 py-3 text-right">Chapel 40%</th></tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
                 @forelse ($balikGasaShares['rows'] as $row)

@@ -88,7 +88,7 @@ class BalikGasaController extends Controller
             ->exists();
 
         if ($exists) {
-            return back()->with('error', "{$member->full_name} is already paid for {$data['collection_month']}.");
+            return back()->with('error', "{$member->full_name} already contributed for {$data['collection_month']}.");
         }
 
         try {
@@ -98,17 +98,17 @@ class BalikGasaController extends Controller
                 'amount' => $data['amount'],
                 'collection_date' => $data['collection_date'],
                 'collection_month' => $data['collection_month'],
-                'remarks' => 'Quick Balik Gasa payment',
+                'remarks' => 'Quick Balik Gasa contribution',
                 'encoded_by' => $request->user()->id,
             ]);
         } catch (QueryException $exception) {
             if ($exception->getCode() === '23000') {
-                return back()->with('error', "{$member->full_name} is already paid for {$data['collection_month']}.");
+                return back()->with('error', "{$member->full_name} already contributed for {$data['collection_month']}.");
             }
 
             throw $exception;
         }
 
-        return back()->with('success', 'Quick payment recorded.');
+        return back()->with('success', 'Quick contribution recorded.');
     }
 }

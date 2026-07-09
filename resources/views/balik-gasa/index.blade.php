@@ -50,20 +50,20 @@
             <p class="text-sm text-slate-600">{{ $monthLabel }}</p>
         </div>
         <div class="grid gap-1 text-right text-sm">
-            <p class="font-semibold text-slate-600">{{ $payments->count() }} paid / {{ $activeMembersCount }} active members</p>
+            <p class="font-semibold text-slate-600">{{ $payments->count() }} contributed / {{ $activeMembersCount }} active members</p>
             <p class="font-bold text-sky-950">Balik Gasa PHP {{ number_format((float) $balikGasaTotal, 2) }}</p>
             <p class="text-xs font-semibold text-slate-600">ICP 60% PHP {{ number_format((float) $balikGasaIcpShare, 2) }} / Chapel 40% PHP {{ number_format((float) $balikGasaChapelShare, 2) }}</p>
         </div>
     </div>
     <div class="overflow-x-auto">
         <table id="balik-gasa-table" class="min-w-full text-left text-sm">
-            <thead class="bg-slate-50 text-xs uppercase text-slate-500"><tr><th class="px-4 py-3">Member</th><th class="px-4 py-3">Status</th><th class="px-4 py-3 text-right">Amount</th><th class="px-4 py-3">Payment Date</th><th class="px-4 py-3">Balik Gasa Payment</th><th class="px-4 py-3 text-right">Actions</th></tr></thead>
+            <thead class="bg-slate-50 text-xs uppercase text-slate-500"><tr><th class="px-4 py-3">Member</th><th class="px-4 py-3">Status</th><th class="px-4 py-3 text-right">Amount</th><th class="px-4 py-3">Contribution Date</th><th class="px-4 py-3">Balik Gasa Contribution</th><th class="px-4 py-3 text-right">Actions</th></tr></thead>
             <tbody class="divide-y divide-slate-100">
                 @forelse ($members as $member)
                     @php $payment = $payments->get($member->id); @endphp
                     <tr class="{{ $payment ? 'bg-slate-50 text-slate-500' : 'bg-white' }}">
                         <td class="px-4 py-3"><span class="font-semibold {{ $payment ? 'text-slate-500' : 'text-slate-900' }}">{{ $member->full_name }}</span><span class="block text-xs text-slate-500"><button type="button" data-balik-gasa-member-url="{{ route('members.balik-gasa-year', $member) }}" data-balik-gasa-year="{{ \Carbon\Carbon::createFromFormat('Y-m', $month)->year }}" class="font-semibold text-sky-700 hover:underline">{{ $member->member_id }}</button> - {{ $member->hugpongBanay?->name ?: 'No Hugpong Banay set' }}</span></td>
-                        <td class="px-4 py-3"><span class="rounded-full px-3 py-1 text-xs font-semibold {{ $payment ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700' }}">{{ $payment ? 'Paid' : 'Unpaid' }}</span></td>
+                        <td class="px-4 py-3"><span class="rounded-full px-3 py-1 text-xs font-semibold {{ $payment ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600' }}">{{ $payment ? 'Contributed' : 'Not Yet Contributed' }}</span></td>
                         <td class="px-4 py-3 text-right font-semibold">{{ $payment ? 'PHP '.number_format((float) $payment->amount, 2) : '-' }}</td>
                         <td class="px-4 py-3">{{ $payment?->collection_date?->format('M d, Y') ?: '-' }}</td>
                         <td class="px-4 py-3">
@@ -75,10 +75,10 @@
                                     <input type="hidden" name="collection_month" value="{{ $month }}">
                                     <input name="amount" type="number" min="0.01" step="0.01" placeholder="Amount" required class="w-28 rounded-lg border border-slate-300 px-3 py-2 text-sm">
                                     <input name="collection_date" type="date" value="{{ now()->format('Y-m-d') }}" required class="w-36 rounded-lg border border-slate-300 px-3 py-2 text-sm">
-                                    <button class="inline-flex items-center justify-center gap-2 rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-white"><x-icon name="save" class="h-4 w-4" /> Pay</button>
+                                    <button class="inline-flex items-center justify-center gap-2 rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-white"><x-icon name="save" class="h-4 w-4" /> Post</button>
                                 </form>
                             @elseif ($payment)
-                                <span class="rounded-lg bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-500">Already paid</span>
+                                <span class="rounded-lg bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-500">Already contributed</span>
                             @else
                                 <span class="text-slate-400">-</span>
                             @endif
@@ -98,7 +98,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="6" class="px-4 py-8 text-center text-slate-500">{{ $monthLock ? 'No paid members found for this locked month.' : 'No active members found for this Hugpong Banay.' }}</td></tr>
+                    <tr><td colspan="6" class="px-4 py-8 text-center text-slate-500">{{ $monthLock ? 'No contributors found for this locked month.' : 'No active members found for this Hugpong Banay.' }}</td></tr>
                 @endforelse
             </tbody>
         </table>

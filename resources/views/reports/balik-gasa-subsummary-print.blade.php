@@ -29,7 +29,7 @@
 
         <section class="mt-6 grid grid-cols-4 gap-3">
             <div class="border border-slate-300 p-3">
-                <p class="text-xs font-semibold uppercase text-slate-500">Paid Members</p>
+                <p class="text-xs font-semibold uppercase text-slate-500">Contributors</p>
                 <p class="mt-1 text-lg font-bold">{{ $balikGasaSubsummary['grand']['members_paid'] }}</p>
             </div>
             <div class="border border-slate-300 p-3">
@@ -52,7 +52,7 @@
                     <div class="mb-2 flex items-end justify-between gap-4">
                         <div>
                             <h2 class="text-lg font-bold">{{ $group['name'] }}</h2>
-                            <p class="text-xs text-slate-500">{{ $group['members_paid'] }} paid members</p>
+                            <p class="text-xs text-slate-500">{{ $group['members_paid'] }} contributors</p>
                         </div>
                         <div class="text-right text-sm">
                             <p class="font-bold">Subtotal PHP {{ number_format((float) $group['total'], 2) }}</p>

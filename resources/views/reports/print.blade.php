@@ -34,7 +34,7 @@
                         <div class="mb-2 flex items-end justify-between gap-4">
                             <div>
                                 <h2 class="text-lg font-bold">{{ $group['name'] }}</h2>
-                                <p class="text-xs text-slate-500">{{ $group['members_paid'] }} paid members</p>
+                                <p class="text-xs text-slate-500">{{ $group['members_paid'] }} contributors</p>
                             </div>
                             <div class="text-right text-sm">
                                 <p class="font-bold">Subtotal PHP {{ number_format((float) $group['total'], 2) }}</p>
@@ -75,7 +75,7 @@
 
             <section class="mt-6 grid grid-cols-4 gap-3">
                 <div class="border border-slate-300 p-3">
-                    <p class="text-xs font-semibold uppercase text-slate-500">Paid Members</p>
+                    <p class="text-xs font-semibold uppercase text-slate-500">Contributors</p>
                     <p class="mt-1 text-lg font-bold">{{ $balikGasaSubsummary['grand']['members_paid'] }}</p>
                 </div>
                 <div class="border border-slate-300 p-3">
@@ -113,7 +113,7 @@
                 <thead>
                     <tr class="bg-slate-100">
                         <th class="border border-slate-300 px-3 py-2">Hugpong Banay</th>
-                        <th class="border border-slate-300 px-3 py-2 text-right">Paid Members</th>
+                        <th class="border border-slate-300 px-3 py-2 text-right">Contributors</th>
                         <th class="border border-slate-300 px-3 py-2 text-right">Balik Gasa Total</th>
                         <th class="border border-slate-300 px-3 py-2 text-right">ICP 60%</th>
                         <th class="border border-slate-300 px-3 py-2 text-right">Chapel 40%</th>

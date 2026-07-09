@@ -39,7 +39,7 @@ class ChapelCollectionTest extends TestCase
     {
         $admin = User::factory()->create(['role' => 'admin']);
         $member = Member::create([
-            'full_name' => 'Dashboard Paid Member',
+            'full_name' => 'Dashboard Contributor Member',
             'status' => 'active',
         ]);
 
@@ -57,7 +57,7 @@ class ChapelCollectionTest extends TestCase
             ->assertSee('May 2026')
             ->assertSee('Balik Gasa Total')
             ->assertSee('PHP 150.00')
-            ->assertSee('1 of 1 paid')
+            ->assertSee('1 of 1 contributed')
             ->assertSee('2026-05', false)
             ->assertSee(route('balik-gasa.index', ['month' => '2026-05']), false)
             ->assertDontSee('All-time monthly pledges')
@@ -378,24 +378,24 @@ class ChapelCollectionTest extends TestCase
             ->assertOk()
             ->assertSee('Selected Hugpong')
             ->assertSee('Selected Member')
-            ->assertSee('Already paid')
+            ->assertSee('Already contributed')
             ->assertDontSee('Other Member');
     }
 
-    public function test_locked_balik_gasa_month_shows_only_paid_members(): void
+    public function test_locked_balik_gasa_month_shows_only_contributors(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
-        $paidMember = Member::create([
-            'full_name' => 'Paid Locked Member',
+        $contributorMember = Member::create([
+            'full_name' => 'Contributor Locked Member',
             'status' => 'active',
         ]);
         Member::create([
-            'full_name' => 'Unpaid Locked Member',
+            'full_name' => 'Pending Locked Member',
             'status' => 'active',
         ]);
 
         Collection::create([
-            'member_id' => $paidMember->id,
+            'member_id' => $contributorMember->id,
             'collection_type' => Collection::BALIK_GASA,
             'amount' => 100,
             'collection_date' => '2026-06-01',
@@ -410,9 +410,9 @@ class ChapelCollectionTest extends TestCase
         $this->actingAs($admin)
             ->get(route('balik-gasa.index', ['month' => '2026-06']))
             ->assertOk()
-            ->assertSee('Paid Locked Member')
-            ->assertSee('1 paid / 2 active members')
-            ->assertDontSee('Unpaid Locked Member')
+            ->assertSee('Contributor Locked Member')
+            ->assertSee('1 contributed / 2 active members')
+            ->assertDontSee('Pending Locked Member')
             ->assertDontSee('Month locked</span>', false)
             ->assertDontSee('>Locked</span>', false);
     }
@@ -910,7 +910,7 @@ class ChapelCollectionTest extends TestCase
             ->assertSee('Electric Bill')
             ->assertSee('Power Company')
             ->assertSee('PHP 1,200.00')
-            ->assertDontSee('Unpaid Balik Gasa');
+            ->assertDontSee('Pending Balik Gasa');
     }
 
     public function test_total_chapel_fund_summarizes_all_collection_funds(): void

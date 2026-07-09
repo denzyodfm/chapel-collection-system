@@ -4,12 +4,12 @@ A modern Laravel + MySQL web app for recording and monitoring chapel collections
 
 ## Features
 
-- Dashboard totals for Balik Gasa, Donation, Halad, current-month Balik Gasa, unpaid members, and recent entries.
+- Dashboard totals for Balik Gasa, Donation, Halad, current-month Balik Gasa contributors, pending members, and recent entries.
 - Members management with search, status filtering, Hugpong Banay assignment, profile pages, and collection history.
 - Hugpong Banay management with current leader selection from members and leader tenure history.
 - Auto-generated member IDs.
 - Collection CRUD with searchable member selectors and filters by member, type, Balik Gasa month, and date range.
-- Balik Gasa monthly monitoring for all active members with paid/unpaid status and quick payment.
+- Balik Gasa monthly monitoring for all active members with contributed/not-yet-contributed status and quick contribution posting.
 - Duplicate Balik Gasa prevention per member per month.
 - Halad recorded as a total mass collection from all members, not per member.
 - Click a member ID to open a yearly Balik Gasa payment plot with previous/next year navigation.
@@ -167,11 +167,11 @@ When a month is locked, records in that month cannot be added, edited, or delete
 ## Page Descriptions
 
 - **Login**: clean branded login page with seeded account hints for local testing.
-- **Dashboard**: card-based totals, unpaid Balik Gasa list for the current month, and recent entries.
+- **Dashboard**: card-based totals, Balik Gasa contributor count for the selected month, pending members, and recent entries.
 - **Members**: searchable member table, Hugpong Banay assignment, add/edit forms, delete action, and member profile with collection totals.
 - **Hugpong Banay**: manage groups, assign a current leader from members, view assigned members, and review leader tenure history.
 - **Collections**: entry list with filters, add/edit/delete forms, conditional month field for Balik Gasa.
-- **Balik Gasa Monitoring**: month selector, Hugpong Banay buttons, all active members, paid/unpaid status, amount, payment date, quick Balik Gasa payment, quick Donation, Offering posting, and member yearly payment plot.
+- **Balik Gasa Monitoring**: month selector, Hugpong Banay buttons, all active members, contributed/not-yet-contributed status, amount, contribution date, quick Balik Gasa posting, quick Donation, Offering posting, and member yearly contribution plot.
 - **Reports**: monthly table, member history, summary totals, grand total, CSV export, and print button.
 - **Ledger**: fund balances, manual entries for beginning balance/other source, disbursement posting, month lock, and transaction ledger.
 - **User Accounts**: admin-only role and account management.

@@ -20,31 +20,31 @@
         <div class="bg-sky-900 p-6 text-white sm:p-8">
             <p class="text-sm font-semibold uppercase tracking-wide text-amber-200">{{ $currentMonthLabel }}</p>
             <h2 class="mt-3 text-3xl font-bold sm:text-4xl">Chapel collection pulse</h2>
-            <p class="mt-3 max-w-2xl text-sm leading-6 text-sky-100">Monitor monthly Balik Gasa compliance, optional offerings, and recent collection activity in one clear workspace.</p>
+            <p class="mt-3 max-w-2xl text-sm leading-6 text-sky-100">Monitor monthly Balik Gasa contributions, optional offerings, and recent collection activity in one clear workspace.</p>
             <div class="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 <div class="rounded-lg bg-white/10 p-4">
                     <p class="text-xs uppercase tracking-wide text-sky-100">Active Members</p>
                     <p class="mt-2 text-2xl font-bold">{{ $activeMembersCount }}</p>
                 </div>
                 <div class="rounded-lg bg-white/10 p-4">
-                    <p class="text-xs uppercase tracking-wide text-sky-100">Paid</p>
+                    <p class="text-xs uppercase tracking-wide text-sky-100">Contributed</p>
                     <p class="mt-2 text-2xl font-bold">{{ $paidMembersCount }}</p>
                 </div>
                 <div class="rounded-lg bg-white/10 p-4">
-                    <p class="text-xs uppercase tracking-wide text-sky-100">Unpaid</p>
+                    <p class="text-xs uppercase tracking-wide text-sky-100">Pending</p>
                     <p class="mt-2 text-2xl font-bold">{{ $unpaidMembersCount }}</p>
                 </div>
                 <div class="rounded-lg bg-amber-300 p-4 text-amber-950">
                     <p class="text-xs uppercase tracking-wide">Balik Gasa Total</p>
                     <p class="mt-2 text-2xl font-bold">PHP {{ number_format((float) $currentMonthBalikGasa, 2) }}</p>
-                    <p class="mt-1 text-xs font-semibold">{{ $paidMembersCount }} of {{ $activeMembersCount }} paid</p>
+                    <p class="mt-1 text-xs font-semibold">{{ $paidMembersCount }} of {{ $activeMembersCount }} contributed</p>
                 </div>
             </div>
         </div>
         <div class="p-6 sm:p-8">
             <div class="flex items-center justify-between gap-4">
                 <div>
-                    <p class="text-sm font-semibold text-slate-500">Balik Gasa Paid Rate</p>
+                    <p class="text-sm font-semibold text-slate-500">Balik Gasa Contribution Rate</p>
                     <p class="mt-2 text-4xl font-bold text-sky-950">{{ $paidRate }}%</p>
                 </div>
                 <a href="{{ route('balik-gasa.index', ['month' => $currentMonth]) }}" class="rounded-lg bg-amber-500 px-4 py-3 text-sm font-semibold text-white hover:bg-amber-600">Monitor</a>
