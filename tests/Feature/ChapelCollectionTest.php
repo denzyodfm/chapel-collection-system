@@ -10,6 +10,7 @@ use App\Models\LedgerEntry;
 use App\Models\Member;
 use App\Models\MonthLock;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -21,12 +22,29 @@ class ChapelCollectionTest extends TestCase
     public function test_admin_can_view_dashboard(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
+        Carbon::setTestNow('2026-07-09');
 
         $this->actingAs($admin)
             ->get(route('dashboard'))
             ->assertOk()
             ->assertSee('Dashboard')
+            ->assertSee('June 2026')
+            ->assertSee('Dashboard Month')
             ->assertSee('Recent Disbursements');
+
+        Carbon::setTestNow();
+    }
+
+    public function test_dashboard_month_can_be_switched(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $this->actingAs($admin)
+            ->get(route('dashboard', ['month' => '2026-05']))
+            ->assertOk()
+            ->assertSee('May 2026')
+            ->assertSee('2026-05', false)
+            ->assertSee(route('balik-gasa.index', ['month' => '2026-05']), false);
     }
 
     public function test_valid_login_redirects_to_dashboard(): void

@@ -13,6 +13,17 @@
     ];
 @endphp
 
+<form method="GET" class="mb-5 flex flex-wrap items-end gap-3 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+    <label class="grid gap-2 text-sm font-medium text-slate-700">Dashboard Month
+        <input name="month" type="month" value="{{ $currentMonth }}" class="rounded-lg border border-slate-300 px-4 py-3">
+    </label>
+    <button class="inline-flex items-center justify-center gap-2 rounded-lg bg-sky-800 px-5 py-3 text-sm font-semibold text-white"><x-icon name="filter" class="h-4 w-4" /> View Month</button>
+    <div class="flex flex-wrap gap-2">
+        <a href="{{ route('dashboard', ['month' => $previousDashboardMonth]) }}" class="rounded-lg border border-slate-300 px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-100">Previous Month</a>
+        <a href="{{ route('dashboard', ['month' => $nextDashboardMonth]) }}" class="rounded-lg border border-slate-300 px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-100">Next Month</a>
+    </div>
+</form>
+
 <section class="overflow-hidden rounded-lg border border-sky-100 bg-white shadow-sm">
     <div class="grid lg:grid-cols-[1.15fr_.85fr]">
         <div class="bg-sky-900 p-6 text-white sm:p-8">
