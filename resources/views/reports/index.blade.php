@@ -44,6 +44,82 @@
     </article>
 </section>
 
+<section class="mt-6 grid gap-6 xl:grid-cols-2">
+    <article class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+        <div class="flex flex-wrap items-start justify-between gap-3">
+            <div>
+                <h2 class="text-lg font-bold text-sky-950">Trial Balance</h2>
+                <p class="text-sm text-slate-500">As of {{ $financialStatements['period_end']->format('F d, Y') }}</p>
+            </div>
+            <span class="rounded-lg bg-sky-50 px-3 py-2 text-xs font-semibold text-sky-800">Fund accounting view</span>
+        </div>
+        <div class="mt-4 overflow-x-auto">
+            <table class="min-w-full text-left text-sm">
+                <thead class="bg-slate-50 text-xs uppercase text-slate-500">
+                    <tr><th class="px-3 py-3">Account</th><th class="px-3 py-3 text-right">Debit</th><th class="px-3 py-3 text-right">Credit</th></tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    @foreach ($financialStatements['trial_rows'] as $row)
+                        <tr>
+                            <td class="px-3 py-3 font-medium">{{ $row['account'] }}</td>
+                            <td class="px-3 py-3 text-right font-semibold">{{ $row['debit'] > 0 ? 'PHP '.number_format((float) $row['debit'], 2) : '-' }}</td>
+                            <td class="px-3 py-3 text-right font-semibold">{{ $row['credit'] > 0 ? 'PHP '.number_format((float) $row['credit'], 2) : '-' }}</td>
+                        </tr>
+                    @endforeach
+                    <tr class="bg-slate-50 font-bold">
+                        <td class="px-3 py-3">Total</td>
+                        <td class="px-3 py-3 text-right">PHP {{ number_format((float) $financialStatements['trial_totals']['debit'], 2) }}</td>
+                        <td class="px-3 py-3 text-right">PHP {{ number_format((float) $financialStatements['trial_totals']['credit'], 2) }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </article>
+
+    <article class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+        <div class="flex flex-wrap items-start justify-between gap-3">
+            <div>
+                <h2 class="text-lg font-bold text-sky-950">Balance Sheet / Fund Position</h2>
+                <p class="text-sm text-slate-500">Simple chapel fund position as of {{ $financialStatements['period_end']->format('F d, Y') }}</p>
+            </div>
+            <span class="rounded-lg bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800">No liabilities recorded</span>
+        </div>
+        <div class="mt-4 grid gap-3 sm:grid-cols-2">
+            <div class="rounded-lg bg-slate-50 p-4">
+                <p class="text-xs font-semibold uppercase text-slate-500">Assets - Cash / Chapel Funds</p>
+                <p class="mt-2 text-2xl font-bold text-sky-950">PHP {{ number_format((float) $financialStatements['balance_sheet']['cash_balance'], 2) }}</p>
+            </div>
+            <div class="rounded-lg bg-amber-50 p-4">
+                <p class="text-xs font-semibold uppercase text-amber-800">Fund Balance</p>
+                <p class="mt-2 text-2xl font-bold text-amber-950">PHP {{ number_format((float) $financialStatements['balance_sheet']['fund_balance'], 2) }}</p>
+            </div>
+        </div>
+        <div class="mt-4 overflow-x-auto">
+            <table class="min-w-full text-left text-sm">
+                <thead class="bg-slate-50 text-xs uppercase text-slate-500">
+                    <tr><th class="px-3 py-3">Fund</th><th class="px-3 py-3 text-right">Credits</th><th class="px-3 py-3 text-right">Debits</th><th class="px-3 py-3 text-right">Balance</th></tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    @foreach ($financialStatements['fund_rows'] as $row)
+                        <tr>
+                            <td class="px-3 py-3 font-medium">{{ $row['label'] }}</td>
+                            <td class="px-3 py-3 text-right">PHP {{ number_format((float) $row['credits'], 2) }}</td>
+                            <td class="px-3 py-3 text-right">PHP {{ number_format((float) $row['debits'], 2) }}</td>
+                            <td class="px-3 py-3 text-right font-semibold">PHP {{ number_format((float) $row['balance'], 2) }}</td>
+                        </tr>
+                    @endforeach
+                    <tr class="bg-slate-50 font-bold">
+                        <td class="px-3 py-3">Total Chapel Fund</td>
+                        <td class="px-3 py-3 text-right">PHP {{ number_format((float) $financialStatements['fund_rows']->sum('credits'), 2) }}</td>
+                        <td class="px-3 py-3 text-right">PHP {{ number_format((float) $financialStatements['fund_rows']->sum('debits'), 2) }}</td>
+                        <td class="px-3 py-3 text-right">PHP {{ number_format((float) $financialStatements['balance_sheet']['fund_balance'], 2) }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </article>
+</section>
+
 <section class="mt-6 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
     <div class="flex flex-wrap items-center justify-between gap-3">
         <div>

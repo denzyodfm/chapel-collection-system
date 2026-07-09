@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Collection;
+use App\Models\Expense;
+use App\Models\LedgerEntry;
 use App\Models\Member;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -33,6 +35,7 @@ class ReportController extends Controller
             ->pluck('total', 'collection_type');
         $balikGasaShares = $this->balikGasaSharesByHugpongBanay($month);
         $balikGasaSubsummary = $this->balikGasaSubsummaryByHugpongBanay($month);
+        $financialStatements = $this->financialStatements($month);
 
         $memberHistory = collect();
         if ($memberId) {
@@ -49,6 +52,7 @@ class ReportController extends Controller
             'summary' => $summary,
             'balikGasaShares' => $balikGasaShares,
             'balikGasaSubsummary' => $balikGasaSubsummary,
+            'financialStatements' => $financialStatements,
             'memberHistory' => $memberHistory,
             'selectedMember' => $memberId ? Member::find($memberId) : null,
             'types' => Collection::TYPES,
@@ -225,6 +229,85 @@ class ReportController extends Controller
                 'total' => $grandTotal,
                 'icp_share' => $grandTotal * 0.60,
                 'chapel_share' => $grandTotal * 0.40,
+            ],
+        ];
+    }
+
+    private function financialStatements(string $month): array
+    {
+        $periodEnd = Carbon::createFromFormat('Y-m', $month)->endOfMonth();
+        $fundTypes = [
+            Collection::BALIK_GASA => 'Balik Gasa Fund',
+            Collection::DONATION => 'Donation Fund',
+            Collection::HALAD => 'Offering Fund',
+            'general' => 'General Chapel Fund Adjustments',
+        ];
+
+        $collectionCredits = Collection::query()
+            ->includedInTotals()
+            ->whereDate('collection_date', '<=', $periodEnd->toDateString())
+            ->selectRaw('collection_type, SUM(amount) as total')
+            ->groupBy('collection_type')
+            ->pluck('total', 'collection_type');
+
+        $manualCredits = LedgerEntry::query()
+            ->whereDate('entry_date', '<=', $periodEnd->toDateString())
+            ->where('entry_type', LedgerEntry::CREDIT)
+            ->selectRaw('fund_type, SUM(amount) as total')
+            ->groupBy('fund_type')
+            ->pluck('total', 'fund_type');
+
+        $manualDebits = LedgerEntry::query()
+            ->whereDate('entry_date', '<=', $periodEnd->toDateString())
+            ->where('entry_type', LedgerEntry::DEBIT)
+            ->selectRaw('fund_type, SUM(amount) as total')
+            ->groupBy('fund_type')
+            ->pluck('total', 'fund_type');
+
+        $disbursements = Expense::query()
+            ->whereDate('expense_date', '<=', $periodEnd->toDateString())
+            ->selectRaw('fund_type, SUM(amount) as total')
+            ->groupBy('fund_type')
+            ->pluck('total', 'fund_type');
+
+        $fundRows = collect($fundTypes)->map(function (string $label, string $type) use ($collectionCredits, $manualCredits, $manualDebits, $disbursements) {
+            $credits = (float) ($manualCredits[$type] ?? 0);
+            if ($type !== 'general') {
+                $credits += (float) ($collectionCredits[$type] ?? 0);
+            }
+
+            $debits = (float) ($manualDebits[$type] ?? 0) + (float) ($disbursements[$type] ?? 0);
+
+            return [
+                'type' => $type,
+                'label' => $label,
+                'credits' => $credits,
+                'debits' => $debits,
+                'balance' => $credits - $debits,
+            ];
+        })->values();
+
+        $totalCredits = (float) $fundRows->sum('credits');
+        $totalDebits = (float) $fundRows->sum('debits');
+        $cashBalance = $totalCredits - $totalDebits;
+
+        $trialRows = [
+            ['account' => 'Cash / Chapel Funds', 'debit' => max($cashBalance, 0), 'credit' => max($cashBalance * -1, 0)],
+            ['account' => 'Disbursements and Fund Deductions', 'debit' => $totalDebits, 'credit' => 0.0],
+            ['account' => 'Collections and Other Sources', 'debit' => 0.0, 'credit' => $totalCredits],
+        ];
+
+        return [
+            'period_end' => $periodEnd,
+            'fund_rows' => $fundRows,
+            'trial_rows' => $trialRows,
+            'trial_totals' => [
+                'debit' => collect($trialRows)->sum('debit'),
+                'credit' => collect($trialRows)->sum('credit'),
+            ],
+            'balance_sheet' => [
+                'cash_balance' => $cashBalance,
+                'fund_balance' => $cashBalance,
             ],
         ];
     }

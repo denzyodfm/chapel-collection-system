@@ -1004,6 +1004,54 @@ class ChapelCollectionTest extends TestCase
             ->assertSee('Princess Homes Fatima Chapel');
     }
 
+    public function test_reports_show_trial_balance_and_balance_sheet(): void
+    {
+        $viewer = User::factory()->create(['role' => 'viewer']);
+        $member = Member::create([
+            'full_name' => 'Financial Report Member',
+            'status' => 'active',
+        ]);
+
+        Collection::create([
+            'member_id' => $member->id,
+            'collection_type' => Collection::BALIK_GASA,
+            'amount' => 500,
+            'collection_date' => '2026-06-28',
+            'collection_month' => '2026-06',
+        ]);
+        Collection::create([
+            'member_id' => $member->id,
+            'collection_type' => Collection::DONATION,
+            'amount' => 300,
+            'collection_date' => '2026-06-10',
+        ]);
+        LedgerEntry::create([
+            'fund_type' => 'general',
+            'entry_type' => LedgerEntry::CREDIT,
+            'amount' => 200,
+            'entry_date' => '2026-06-01',
+        ]);
+        Expense::create([
+            'fund_type' => Collection::BALIK_GASA,
+            'category' => 'Maintenance',
+            'amount' => 250,
+            'expense_date' => '2026-06-20',
+        ]);
+
+        $this->actingAs($viewer)
+            ->get(route('reports.index', ['month' => '2026-06']))
+            ->assertOk()
+            ->assertSee('Trial Balance')
+            ->assertSee('Balance Sheet / Fund Position')
+            ->assertSee('Cash / Chapel Funds')
+            ->assertSee('Collections and Other Sources')
+            ->assertSee('Disbursements and Fund Deductions')
+            ->assertSee('PHP 750.00')
+            ->assertSee('PHP 1,000.00')
+            ->assertSee('General Chapel Fund Adjustments')
+            ->assertSee('Total Chapel Fund');
+    }
+
     public function test_monthly_report_shows_balik_gasa_share_by_hugpong_banay(): void
     {
         $viewer = User::factory()->create(['role' => 'viewer']);
