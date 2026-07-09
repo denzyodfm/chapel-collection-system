@@ -38,13 +38,31 @@ class ChapelCollectionTest extends TestCase
     public function test_dashboard_month_can_be_switched(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
+        $member = Member::create([
+            'full_name' => 'Dashboard Paid Member',
+            'status' => 'active',
+        ]);
+
+        Collection::create([
+            'member_id' => $member->id,
+            'collection_type' => Collection::BALIK_GASA,
+            'amount' => 150,
+            'collection_date' => '2026-05-28',
+            'collection_month' => '2026-05',
+        ]);
 
         $this->actingAs($admin)
             ->get(route('dashboard', ['month' => '2026-05']))
             ->assertOk()
             ->assertSee('May 2026')
+            ->assertSee('Balik Gasa Total')
+            ->assertSee('PHP 150.00')
+            ->assertSee('1 of 1 paid')
             ->assertSee('2026-05', false)
-            ->assertSee(route('balik-gasa.index', ['month' => '2026-05']), false);
+            ->assertSee(route('balik-gasa.index', ['month' => '2026-05']), false)
+            ->assertDontSee('All-time monthly pledges')
+            ->assertDontSee('Optional gifts recorded')
+            ->assertDontSee('Mass offerings recorded');
     }
 
     public function test_valid_login_redirects_to_dashboard(): void

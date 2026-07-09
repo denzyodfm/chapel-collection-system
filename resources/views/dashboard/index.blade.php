@@ -4,15 +4,6 @@
 @section('eyebrow', 'Overview')
 
 @section('content')
-@php
-    $cards = [
-        ['Balik Gasa', $totals[\App\Models\Collection::BALIK_GASA] ?? 0, 'bg-sky-900 text-white', 'All-time monthly pledges', route('balik-gasa.index', ['month' => $currentMonth])],
-        ['Donation', $totals[\App\Models\Collection::DONATION] ?? 0, 'bg-white text-slate-900', 'Optional gifts recorded', route('donations.index', ['month' => $currentMonth])],
-        ['Offering', $totals[\App\Models\Collection::HALAD] ?? 0, 'bg-white text-slate-900', 'Mass offerings recorded', route('offerings.index', ['month' => $currentMonth])],
-        ["{$currentMonthLabel} Balik Gasa", $currentMonthBalikGasa, 'bg-amber-100 text-amber-950', "{$paidMembersCount} of {$activeMembersCount} active members paid", route('balik-gasa.index', ['month' => $currentMonth])],
-    ];
-@endphp
-
 <form method="GET" class="mb-5 flex flex-wrap items-end gap-3 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
     <label class="grid gap-2 text-sm font-medium text-slate-700">Dashboard Month
         <input name="month" type="month" value="{{ $currentMonth }}" class="rounded-lg border border-slate-300 px-4 py-3">
@@ -30,7 +21,7 @@
             <p class="text-sm font-semibold uppercase tracking-wide text-amber-200">{{ $currentMonthLabel }}</p>
             <h2 class="mt-3 text-3xl font-bold sm:text-4xl">Chapel collection pulse</h2>
             <p class="mt-3 max-w-2xl text-sm leading-6 text-sky-100">Monitor monthly Balik Gasa compliance, optional offerings, and recent collection activity in one clear workspace.</p>
-            <div class="mt-6 grid gap-3 sm:grid-cols-3">
+            <div class="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 <div class="rounded-lg bg-white/10 p-4">
                     <p class="text-xs uppercase tracking-wide text-sky-100">Active Members</p>
                     <p class="mt-2 text-2xl font-bold">{{ $activeMembersCount }}</p>
@@ -42,6 +33,11 @@
                 <div class="rounded-lg bg-white/10 p-4">
                     <p class="text-xs uppercase tracking-wide text-sky-100">Unpaid</p>
                     <p class="mt-2 text-2xl font-bold">{{ $unpaidMembersCount }}</p>
+                </div>
+                <div class="rounded-lg bg-amber-300 p-4 text-amber-950">
+                    <p class="text-xs uppercase tracking-wide">Balik Gasa Total</p>
+                    <p class="mt-2 text-2xl font-bold">PHP {{ number_format((float) $currentMonthBalikGasa, 2) }}</p>
+                    <p class="mt-1 text-xs font-semibold">{{ $paidMembersCount }} of {{ $activeMembersCount }} paid</p>
                 </div>
             </div>
         </div>
@@ -68,19 +64,6 @@
             </div>
         </div>
     </div>
-</section>
-
-<section class="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-    @foreach ($cards as [$label, $value, $class, $caption, $url])
-        <article class="rounded-lg border border-slate-200 p-5 shadow-sm {{ $class }}">
-            <div class="flex items-start justify-between gap-3">
-                <p class="text-sm font-semibold opacity-80">{{ $label }}</p>
-                <a href="{{ $url }}" class="rounded-lg bg-white/80 px-3 py-1 text-xs font-bold text-sky-800 hover:bg-white">Open</a>
-            </div>
-            <p class="mt-3 text-3xl font-bold">PHP {{ number_format((float) $value, 2) }}</p>
-            <p class="mt-2 text-xs font-medium opacity-70">{{ $caption }}</p>
-        </article>
-    @endforeach
 </section>
 
 <section class="mt-6">
