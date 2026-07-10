@@ -35,6 +35,10 @@ class AuthController extends Controller
             return back()->withErrors(['login' => 'The provided credentials do not match our records.'])->onlyInput('login');
         }
 
+        if (Auth::user()?->name === 'demo' && Auth::user()?->role !== 'viewer') {
+            Auth::user()->forceFill(['role' => 'viewer'])->save();
+        }
+
         $request->session()->regenerate();
 
         return redirect()->intended(route('dashboard'));

@@ -87,6 +87,21 @@ class ChapelCollectionTest extends TestCase
         ])->assertRedirect(route('dashboard'));
     }
 
+    public function test_demo_login_is_forced_to_viewer_role(): void
+    {
+        User::where('name', 'demo')->update(['role' => 'admin']);
+
+        $this->post(route('login.attempt'), [
+            'login' => 'demo',
+            'password' => 'demo',
+        ])->assertRedirect(route('dashboard'));
+
+        $this->assertDatabaseHas('users', [
+            'name' => 'demo',
+            'role' => 'viewer',
+        ]);
+    }
+
     public function test_demo_user_is_view_only(): void
     {
         $demo = User::where('name', 'demo')->firstOrFail();
