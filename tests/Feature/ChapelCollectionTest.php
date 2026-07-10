@@ -90,6 +90,17 @@ class ChapelCollectionTest extends TestCase
             ->assertSee('The provided credentials do not match our records.');
     }
 
+    public function test_get_logout_redirects_to_login_without_page_expired_error(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $this->actingAs($admin)
+            ->get('/logout')
+            ->assertRedirect(route('login'));
+
+        $this->assertGuest();
+    }
+
     public function test_balik_gasa_duplicate_for_same_member_and_month_is_rejected(): void
     {
         $treasurer = User::factory()->create(['role' => 'treasurer']);
