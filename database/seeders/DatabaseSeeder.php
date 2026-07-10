@@ -45,7 +45,7 @@ class DatabaseSeeder extends Seeder
             ['email' => 'demo@chapel.test'],
             [
                 'name' => 'demo',
-                'role' => 'admin',
+                'role' => 'viewer',
                 'password' => Hash::make('demo'),
             ],
         );

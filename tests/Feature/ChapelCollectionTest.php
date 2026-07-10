@@ -87,6 +87,23 @@ class ChapelCollectionTest extends TestCase
         ])->assertRedirect(route('dashboard'));
     }
 
+    public function test_demo_user_is_view_only(): void
+    {
+        $demo = User::where('name', 'demo')->firstOrFail();
+
+        $this->actingAs($demo)
+            ->get(route('dashboard'))
+            ->assertOk();
+
+        $this->actingAs($demo)
+            ->get(route('reports.index'))
+            ->assertOk();
+
+        $this->actingAs($demo)
+            ->get(route('members.index'))
+            ->assertForbidden();
+    }
+
     public function test_login_page_shows_demo_account_without_seeded_account_list(): void
     {
         $this->get(route('login'))
