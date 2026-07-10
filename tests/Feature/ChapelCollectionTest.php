@@ -79,6 +79,25 @@ class ChapelCollectionTest extends TestCase
         ])->assertRedirect(route('dashboard'));
     }
 
+    public function test_demo_username_login_redirects_to_dashboard(): void
+    {
+        $this->post(route('login.attempt'), [
+            'login' => 'demo',
+            'password' => 'demo',
+        ])->assertRedirect(route('dashboard'));
+    }
+
+    public function test_login_page_shows_demo_account_without_seeded_account_list(): void
+    {
+        $this->get(route('login'))
+            ->assertOk()
+            ->assertSee('Demo account')
+            ->assertSee('demo / demo')
+            ->assertDontSee('admin@chapel.test')
+            ->assertDontSee('treasurer@chapel.test')
+            ->assertDontSee('viewer@chapel.test');
+    }
+
     public function test_invalid_login_shows_error_on_login_page(): void
     {
         $this->followingRedirects()

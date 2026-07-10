@@ -41,6 +41,15 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('password'),
         ]);
 
+        User::updateOrCreate(
+            ['email' => 'demo@chapel.test'],
+            [
+                'name' => 'demo',
+                'role' => 'admin',
+                'password' => Hash::make('demo'),
+            ],
+        );
+
         $hugpongBanays = collect([
             'San Isidro' => HugpongBanay::create(['name' => 'San Isidro', 'description' => 'Families near the main chapel lane.']),
             'San Roque' => HugpongBanay::create(['name' => 'San Roque', 'description' => 'Families near the basketball court.']),

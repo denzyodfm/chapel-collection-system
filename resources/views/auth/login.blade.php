@@ -33,12 +33,12 @@
             <form method="POST" action="{{ route('login.attempt') }}" class="mt-8 grid gap-5">
                 @csrf
                 <label class="grid gap-2 text-sm font-medium text-slate-700">
-                    Email
-                    <input name="email" type="email" value="{{ old('email') }}" required class="rounded-lg border border-slate-300 px-4 py-3 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100">
+                    Email or username
+                    <input data-login-username name="login" type="text" value="{{ old('login', old('email')) }}" required class="rounded-lg border border-slate-300 px-4 py-3 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100">
                 </label>
                 <label class="grid gap-2 text-sm font-medium text-slate-700">
                     Password
-                    <input name="password" type="password" required class="rounded-lg border border-slate-300 px-4 py-3 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100">
+                    <input data-login-password name="password" type="password" required class="rounded-lg border border-slate-300 px-4 py-3 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100">
                 </label>
                 <label class="flex items-center gap-2 text-sm text-slate-600">
                     <input name="remember" type="checkbox" class="rounded border-slate-300 text-sky-700">
@@ -46,8 +46,11 @@
                 </label>
                 <button class="rounded-lg bg-sky-800 px-5 py-3 font-semibold text-white shadow-sm hover:bg-sky-900">Login</button>
             </form>
-            <div class="mt-6 rounded-lg bg-slate-50 p-4 text-sm text-slate-600">
-                Seeded accounts use password <strong>password</strong>: admin@chapel.test, treasurer@chapel.test, viewer@chapel.test.
+            <div class="mt-6 rounded-lg bg-sky-50 p-4 text-sm text-slate-600">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <p><strong>Demo account:</strong> demo / demo</p>
+                    <button type="button" data-demo-login class="rounded-lg border border-sky-200 px-3 py-2 text-xs font-semibold text-sky-800 hover:bg-white">Use demo</button>
+                </div>
             </div>
         </div>
     </section>

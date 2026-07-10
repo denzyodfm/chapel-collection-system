@@ -55,6 +55,20 @@ document.addEventListener('input', (event) => {
 });
 
 document.addEventListener('click', (event) => {
+    if (event.target.closest('[data-demo-login]')) {
+        const username = document.querySelector('[data-login-username]');
+        const password = document.querySelector('[data-login-password]');
+
+        if (username && password) {
+            username.value = 'demo';
+            password.value = 'demo';
+            username.dispatchEvent(new Event('input', { bubbles: true }));
+            password.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+
+        return;
+    }
+
     const opener = event.target.closest('[data-modal-open]');
     const closer = event.target.closest('[data-modal-close]');
 
