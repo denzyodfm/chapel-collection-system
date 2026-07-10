@@ -8,8 +8,8 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased">
-    <img src="{{ asset('images/fatima-image.png') }}" alt="" aria-hidden="true" class="pointer-events-none fixed right-3 top-3 z-20 hidden h-44 w-auto opacity-10 sm:block lg:right-8 lg:top-6 lg:h-64">
     @auth
+        <img src="{{ asset('images/fatima-image.png') }}" alt="" aria-hidden="true" class="pointer-events-none fixed right-3 top-3 z-20 hidden h-44 w-auto opacity-10 sm:block lg:right-8 lg:top-6 lg:h-64">
         <div data-sidebar-shell class="relative z-10 min-h-screen lg:flex">
             <div data-sidebar-overlay class="fixed inset-0 z-30 hidden bg-slate-950/40 lg:hidden"></div>
             <aside data-sidebar class="fixed inset-y-0 left-0 z-40 w-72 -translate-x-full overflow-y-auto border-r border-slate-200 bg-white transition-transform duration-200">
