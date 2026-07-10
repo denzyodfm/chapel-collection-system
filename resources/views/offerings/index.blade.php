@@ -3,7 +3,9 @@
 @section('page-title', 'Offering Monthly Monitoring')
 
 @section('page-actions')
-<a href="{{ route('collections.create', ['collection_type' => \App\Models\Collection::HALAD]) }}" class="inline-flex items-center gap-2 rounded-lg bg-sky-800 px-5 py-3 text-sm font-semibold text-white hover:bg-sky-900"><x-icon name="plus" class="h-4 w-4" /> Add Offering</a>
+@if (auth()->user()->hasAnyRole(['admin', 'treasurer']))
+    <a href="{{ route('collections.create', ['collection_type' => \App\Models\Collection::HALAD]) }}" class="inline-flex items-center gap-2 rounded-lg bg-sky-800 px-5 py-3 text-sm font-semibold text-white hover:bg-sky-900"><x-icon name="plus" class="h-4 w-4" /> Add Offering</a>
+@endif
 @endsection
 
 @section('content')

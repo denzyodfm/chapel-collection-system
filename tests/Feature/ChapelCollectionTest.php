@@ -102,6 +102,33 @@ class ChapelCollectionTest extends TestCase
         $this->actingAs($demo)
             ->get(route('members.index'))
             ->assertForbidden();
+
+        $this->actingAs($demo)
+            ->get(route('donations.index'))
+            ->assertOk()
+            ->assertDontSee('Add Donation')
+            ->assertDontSee('Lock Month');
+
+        $this->actingAs($demo)
+            ->get(route('offerings.index'))
+            ->assertOk()
+            ->assertDontSee('Add Offering')
+            ->assertDontSee('Post Offering After Mass')
+            ->assertDontSee('Lock Month');
+
+        $this->actingAs($demo)
+            ->get(route('ledger.index'))
+            ->assertOk()
+            ->assertDontSee('Post Ledger Entry')
+            ->assertDontSee('Encode Disbursement')
+            ->assertDontSee('Lock Month');
+
+        $this->actingAs($demo)
+            ->post(route('month-locks.store'), [
+                'lockable_type' => Collection::BALIK_GASA,
+                'month' => '2026-06',
+            ])
+            ->assertForbidden();
     }
 
     public function test_login_page_shows_demo_account_without_seeded_account_list(): void
@@ -546,8 +573,16 @@ class ChapelCollectionTest extends TestCase
             ->assertJsonPath('months.1.paid', true)
             ->assertJsonPath('months.1.reference_no', 'BG-2026-02')
             ->assertJsonPath('months.2.paid', false)
-            ->assertJsonPath('months.2.can_record_historical', true)
+            ->assertJsonPath('months.2.can_record_historical', false)
+            ->assertJsonPath('months.2.can_edit_historical', false)
             ->assertJsonPath('months.5.can_record_historical', false);
+
+        $treasurer = User::factory()->create(['role' => 'treasurer']);
+
+        $this->actingAs($treasurer)
+            ->getJson(route('members.balik-gasa-year', ['member' => $member, 'year' => 2026]))
+            ->assertOk()
+            ->assertJsonPath('months.2.can_record_historical', true);
     }
 
     public function test_historical_balik_gasa_plot_payment_is_excluded_from_totals(): void
@@ -581,6 +616,7 @@ class ChapelCollectionTest extends TestCase
             ->assertJsonPath('months.4.paid', true)
             ->assertJsonPath('months.4.excluded_from_totals', true)
             ->assertJsonPath('months.4.amount', 450)
+            ->assertJsonPath('months.4.can_edit_historical', true)
             ->assertJsonPath('months.4.historical_update_url', route('members.balik-gasa-historical.update', [$member, $historicalPayment]));
 
         $this->actingAs($treasurer)

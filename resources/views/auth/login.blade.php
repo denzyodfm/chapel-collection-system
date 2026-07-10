@@ -5,7 +5,7 @@
 @section('content')
 <main class="grid min-h-screen lg:grid-cols-[1fr_480px]">
     <section class="relative hidden overflow-hidden bg-sky-900 lg:block">
-        <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('{{ asset('images/our-lady-of-fatima.jpg') }}');"></div>
+        <div class="absolute inset-0 bg-contain bg-center bg-no-repeat" style="background-image: url('{{ asset('images/our-lady-of-fatima.jpg') }}');"></div>
         <div class="absolute inset-0 bg-gradient-to-br from-sky-950/92 via-sky-900/76 to-blue-900/82"></div>
         <div class="absolute inset-y-0 right-0 w-1/2 bg-gradient-to-l from-transparent via-white/10 to-transparent"></div>
         <div class="relative flex h-full flex-col justify-between p-12 text-white">

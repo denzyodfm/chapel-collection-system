@@ -177,7 +177,7 @@ async function loadBalikGasaPlot() {
         const rawAmount = Number(month.amount).toFixed(2);
         const date = month.date || '-';
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
-        const paymentContent = month.paid && month.excluded_from_totals
+        const paymentContent = month.paid && month.excluded_from_totals && month.can_edit_historical
             ? `
                 <form method="POST" action="${month.historical_update_url}" class="mt-3 grid gap-2">
                     <input type="hidden" name="_token" value="${csrfToken}">
@@ -191,6 +191,7 @@ async function loadBalikGasaPlot() {
                 ? `
                     <p class="mt-2 text-lg font-bold">PHP ${amount}</p>
                     <p class="mt-1 text-xs opacity-80">${date}</p>
+                    ${month.excluded_from_totals ? '<p class="mt-2 text-xs opacity-80">Excluded from totals</p>' : ''}
                 `
                 : '';
         const historicalForm = month.can_record_historical

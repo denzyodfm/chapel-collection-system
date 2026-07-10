@@ -123,6 +123,7 @@ class MemberController extends Controller
             'year' => ['nullable', 'integer', 'min:2000', 'max:2100'],
         ]);
         $year = (int) ($validated['year'] ?? now()->year);
+        $canManageHistorical = $request->user()?->hasAnyRole(['admin', 'treasurer']) ?? false;
 
         $payments = Collection::where('collection_type', Collection::BALIK_GASA)
             ->where('member_id', $member->id)
@@ -130,9 +131,11 @@ class MemberController extends Controller
             ->get()
             ->keyBy('collection_month');
 
-        $months = collect(range(1, 12))->map(function ($month) use ($year, $payments, $member) {
+        $months = collect(range(1, 12))->map(function ($month) use ($year, $payments, $member, $canManageHistorical) {
             $key = sprintf('%d-%02d', $year, $month);
             $payment = $payments->get($key);
+            $isHistorical = $key < self::BALIK_GASA_TOTALS_START_MONTH;
+            $canEditHistorical = $canManageHistorical && (bool) $payment?->excluded_from_totals && $isHistorical;
 
             return [
                 'month' => $key,
@@ -142,8 +145,9 @@ class MemberController extends Controller
                 'date' => $payment?->collection_date?->format('M d, Y'),
                 'reference_no' => $payment?->reference_no,
                 'excluded_from_totals' => (bool) $payment?->excluded_from_totals,
-                'can_record_historical' => ! $payment && $key < self::BALIK_GASA_TOTALS_START_MONTH,
-                'historical_update_url' => $payment?->excluded_from_totals ? route('members.balik-gasa-historical.update', [$member, $payment]) : null,
+                'can_record_historical' => $canManageHistorical && ! $payment && $isHistorical,
+                'can_edit_historical' => $canEditHistorical,
+                'historical_update_url' => $canEditHistorical ? route('members.balik-gasa-historical.update', [$member, $payment]) : null,
             ];
         });
 
