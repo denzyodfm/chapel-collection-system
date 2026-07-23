@@ -1,5 +1,31 @@
 @import 'tailwindcss';
 
+.template-document-content {
+    line-height: 1.6;
+}
+
+.template-document-content p {
+    margin-bottom: 0.75rem;
+}
+
+.template-document-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+}
+
+.template-document-content td,
+.template-document-content th {
+    border: 1px solid #cbd5e1;
+    padding: 0.5rem;
+    vertical-align: top;
+}
+
+.template-document-content img {
+    max-width: 100%;
+    height: auto;
+}
+
 @source '../views/**/*.blade.php';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';

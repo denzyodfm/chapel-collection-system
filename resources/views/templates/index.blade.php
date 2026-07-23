@@ -52,7 +52,16 @@
                 </p>
             </div>
             <div class="flex shrink-0 flex-wrap items-center gap-3">
-                <a href="{{ route('templates.view', $template) }}" target="_blank" rel="noopener" class="rounded-lg border border-sky-200 px-4 py-2 text-sm font-semibold text-sky-800 hover:bg-sky-50">View</a>
+                <button
+                    type="button"
+                    data-template-preview
+                    data-template-name="{{ $template->name }}"
+                    data-template-filename="{{ $template->original_filename }}"
+                    data-template-mime="{{ $template->mime_type }}"
+                    data-template-view-url="{{ route('templates.view', $template) }}"
+                    data-template-download-url="{{ route('templates.download', $template) }}"
+                    class="rounded-lg border border-sky-200 px-4 py-2 text-sm font-semibold text-sky-800 hover:bg-sky-50"
+                >View</button>
                 <a href="{{ route('templates.download', $template) }}" class="rounded-lg bg-sky-800 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-900">Download</a>
                 @if (auth()->user()->role === 'admin')
                     <form method="POST" action="{{ route('templates.destroy', $template) }}" onsubmit="return confirm('Delete this template?')">
@@ -68,4 +77,26 @@
 </section>
 
 <div class="mt-5">{{ $templates->links() }}</div>
+
+<div id="template-preview-modal" class="fixed inset-0 z-[70] hidden" role="dialog" aria-modal="true" aria-labelledby="template-preview-title">
+    <div data-template-preview-backdrop class="absolute inset-0 bg-slate-950/60 backdrop-blur-sm"></div>
+    <div class="relative flex min-h-full items-center justify-center p-3 sm:p-6">
+        <div class="flex max-h-[94vh] w-full max-w-6xl flex-col overflow-hidden rounded-xl bg-white shadow-2xl">
+            <header class="flex items-start justify-between gap-4 border-b border-slate-200 px-5 py-4">
+                <div class="min-w-0">
+                    <h2 id="template-preview-title" class="truncate text-lg font-bold text-sky-950">Document preview</h2>
+                    <p id="template-preview-filename" class="mt-1 truncate text-sm text-slate-500"></p>
+                </div>
+                <button type="button" data-template-preview-close class="rounded-lg border border-slate-200 p-2 text-slate-500 hover:bg-slate-100" aria-label="Close preview">
+                    <x-icon name="x" class="h-5 w-5" />
+                </button>
+            </header>
+            <div id="template-preview-body" class="min-h-0 flex-1 overflow-auto bg-slate-100"></div>
+            <footer class="flex justify-end gap-3 border-t border-slate-200 px-5 py-4">
+                <button type="button" data-template-preview-close class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Close</button>
+                <a id="template-preview-download" href="#" class="rounded-lg bg-sky-800 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-900">Download</a>
+            </footer>
+        </div>
+    </div>
+</div>
 @endsection

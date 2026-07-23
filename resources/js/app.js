@@ -1,3 +1,6 @@
+import DOMPurify from 'dompurify';
+import mammoth from 'mammoth/mammoth.browser';
+
 document.addEventListener('input', (event) => {
     const filter = event.target.closest('[data-member-filter-target]');
 
@@ -79,6 +82,126 @@ document.addEventListener('click', (event) => {
 
     if (closer) {
         document.getElementById(closer.dataset.modalClose)?.classList.add('hidden');
+    }
+});
+
+const templatePreviewModal = document.getElementById('template-preview-modal');
+const templatePreviewTitle = document.getElementById('template-preview-title');
+const templatePreviewFilename = document.getElementById('template-preview-filename');
+const templatePreviewBody = document.getElementById('template-preview-body');
+const templatePreviewDownload = document.getElementById('template-preview-download');
+let templatePreviewObjectUrl = null;
+
+function closeTemplatePreview() {
+    if (!templatePreviewModal) {
+        return;
+    }
+
+    templatePreviewModal.classList.add('hidden');
+    document.body.classList.remove('overflow-hidden');
+
+    if (templatePreviewObjectUrl) {
+        URL.revokeObjectURL(templatePreviewObjectUrl);
+        templatePreviewObjectUrl = null;
+    }
+
+    if (templatePreviewBody) {
+        templatePreviewBody.innerHTML = '';
+    }
+}
+
+async function openTemplatePreview(trigger) {
+    if (!templatePreviewModal || !templatePreviewTitle || !templatePreviewFilename || !templatePreviewBody || !templatePreviewDownload) {
+        return;
+    }
+
+    closeTemplatePreview();
+    templatePreviewTitle.textContent = trigger.dataset.templateName || 'Document preview';
+    templatePreviewFilename.textContent = trigger.dataset.templateFilename || '';
+    templatePreviewDownload.href = trigger.dataset.templateDownloadUrl;
+    templatePreviewBody.innerHTML = '<div class="flex min-h-80 items-center justify-center text-sm font-semibold text-slate-500">Loading document preview...</div>';
+    templatePreviewModal.classList.remove('hidden');
+    document.body.classList.add('overflow-hidden');
+
+    try {
+        const response = await fetch(trigger.dataset.templateViewUrl, {
+            headers: { Accept: '*/*' },
+        });
+
+        if (!response.ok) {
+            throw new Error('The document could not be loaded.');
+        }
+
+        const blob = await response.blob();
+        const filename = (trigger.dataset.templateFilename || '').toLowerCase();
+        const mimeType = (blob.type || trigger.dataset.templateMime || '').toLowerCase();
+        const isDocx = filename.endsWith('.docx')
+            || mimeType.includes('application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+
+        if (isDocx) {
+            const result = await mammoth.convertToHtml({ arrayBuffer: await blob.arrayBuffer() });
+            templatePreviewBody.innerHTML = `
+                <div class="mx-auto min-h-full max-w-4xl bg-white p-6 text-slate-900 shadow-sm sm:p-10">
+                    <div class="template-document-content">${DOMPurify.sanitize(result.value)}</div>
+                </div>
+            `;
+            return;
+        }
+
+        templatePreviewObjectUrl = URL.createObjectURL(blob);
+
+        if (mimeType === 'application/pdf' || filename.endsWith('.pdf')) {
+            templatePreviewBody.innerHTML = `<iframe src="${templatePreviewObjectUrl}" title="Document preview" class="h-[70vh] w-full border-0"></iframe>`;
+            return;
+        }
+
+        if (mimeType.startsWith('image/')) {
+            templatePreviewBody.innerHTML = `<div class="flex min-h-80 items-center justify-center p-4"><img src="${templatePreviewObjectUrl}" alt="Document preview" class="max-h-[70vh] max-w-full object-contain"></div>`;
+            return;
+        }
+
+        if (mimeType.startsWith('text/') || filename.match(/\.(txt|csv|log|md|json|xml)$/)) {
+            const pre = document.createElement('pre');
+            pre.className = 'min-h-80 whitespace-pre-wrap break-words bg-white p-6 font-mono text-sm text-slate-800';
+            pre.textContent = await blob.text();
+            templatePreviewBody.replaceChildren(pre);
+            return;
+        }
+
+        templatePreviewBody.innerHTML = `
+            <div class="flex min-h-80 flex-col items-center justify-center p-8 text-center">
+                <p class="font-semibold text-slate-800">A browser preview is not available for this file type.</p>
+                <p class="mt-2 text-sm text-slate-500">Use the Download button to open it with an application on your device.</p>
+            </div>
+        `;
+    } catch (error) {
+        templatePreviewBody.innerHTML = `
+            <div class="flex min-h-80 flex-col items-center justify-center p-8 text-center">
+                <p class="font-semibold text-rose-700">The document preview could not be loaded.</p>
+                <p class="mt-2 text-sm text-slate-500">${DOMPurify.sanitize(error.message)}</p>
+            </div>
+        `;
+    }
+}
+
+document.addEventListener('click', (event) => {
+    const previewTrigger = event.target.closest('[data-template-preview]');
+
+    if (previewTrigger) {
+        event.preventDefault();
+        openTemplatePreview(previewTrigger);
+        return;
+    }
+
+    if (event.target.closest('[data-template-preview-close]')
+        || event.target.matches('[data-template-preview-backdrop]')) {
+        closeTemplatePreview();
+    }
+});
+
+document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && templatePreviewModal && !templatePreviewModal.classList.contains('hidden')) {
+        closeTemplatePreview();
     }
 });
 
