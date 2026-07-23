@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BalikGasaController;
 use App\Http\Controllers\CollectionController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DocumentTemplateController;
 use App\Http\Controllers\DonationController;
 use App\Http\Controllers\HugpongBanayController;
 use App\Http\Controllers\LedgerController;
@@ -68,6 +69,12 @@ Route::middleware('auth')->group(function (): void {
     Route::get('/reports/monthly/print', [ReportController::class, 'print'])->name('reports.print');
     Route::get('/reports/balik-gasa-subsummary/print', [ReportController::class, 'printBalikGasaSubsummary'])->name('reports.balik-gasa-subsummary.print');
     Route::get('/reports/csv', [ReportController::class, 'csv'])->name('reports.csv');
+
+    Route::get('/templates', [DocumentTemplateController::class, 'index'])->name('templates.index');
+    Route::get('/templates/{template}/view', [DocumentTemplateController::class, 'view'])->name('templates.view');
+    Route::get('/templates/{template}/download', [DocumentTemplateController::class, 'download'])->name('templates.download');
+    Route::post('/templates', [DocumentTemplateController::class, 'store'])->middleware('role:admin')->name('templates.store');
+    Route::delete('/templates/{template}', [DocumentTemplateController::class, 'destroy'])->middleware('role:admin')->name('templates.destroy');
 
     Route::resource('users', UserController::class)->except('show')->middleware('role:admin');
 });

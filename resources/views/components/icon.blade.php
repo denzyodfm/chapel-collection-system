@@ -20,6 +20,9 @@
         @case('ledger')
             <path stroke-linecap="round" stroke-linejoin="round" d="M5 4h14v16H5V4Zm4 4h6M9 12h6M9 16h6" />
             @break
+        @case('document')
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 3h8l4 4v14H6V3Zm8 0v5h5M9 12h6M9 16h6" />
+            @break
         @case('users')
             <path stroke-linecap="round" stroke-linejoin="round" d="M16 11a4 4 0 1 0-8 0m8 0a4 4 0 1 1-8 0m8 0c2.8.7 5 2.4 5 5v2H3v-2c0-2.6 2.2-4.3 5-5" />
             @break

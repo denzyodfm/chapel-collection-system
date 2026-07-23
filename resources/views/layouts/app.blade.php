@@ -32,6 +32,7 @@
                             ['Offering Monitor', 'offerings.index', 'offerings*', 'coins'],
                             ['Reports', 'reports.index', 'reports*', 'report'],
                             ['Ledger', 'ledger.index', 'ledger*', 'ledger'],
+                            ['Templates', 'templates.index', 'templates*', 'document'],
                         ];
                         if (auth()->user()->hasAnyRole(['admin', 'treasurer'])) {
                             $nav[] = ['Members', 'members.index', 'members*', 'users'];
